@@ -1,0 +1,2540 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<title>文字游戏工坊 · 手机版</title>
+<link rel="manifest" href="manifest.webmanifest"/>
+<meta name="theme-color" content="#0a0c12"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="工坊"/>
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32"/>
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png"/>
+<style>
+:root{
+  --bg:#0a0c12;--bg2:#121620;--bg3:#1a2030;--line:#252d3d;
+  --txt:#dfe5f0;--dim:#8b95a8;--dim2:#5d6678;
+  --gold:#e8c37a;--blue:#7db8f0;--green:#63c68a;--red:#e06a6a;
+  --purple:#b48ce8;--cyan:#6ad2d2;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);
+  font-family:"Microsoft YaHei","PingFang SC",system-ui,sans-serif;font-size:15px;line-height:1.75}
+button{font-family:inherit;font-size:14px;background:var(--bg3);border:1px solid var(--line);
+  border-radius:8px;color:var(--txt);padding:7px 13px;cursor:pointer}
+button:hover{border-color:var(--gold);color:var(--gold)}
+button.primary{border-color:var(--gold);color:var(--gold);background:#1e2534}
+button.tiny{padding:3px 9px;font-size:12.5px;color:var(--dim)}
+button:disabled{opacity:.4;cursor:not-allowed}
+input,select,textarea{background:var(--bg3);border:1px solid var(--line);border-radius:8px;
+  color:var(--txt);padding:7px 10px;font-family:inherit;font-size:14.5px;width:100%}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--gold)}
+.view{display:none;flex-direction:column;height:100%;max-width:960px;margin:0 auto}
+.view.on{display:flex}
+.topnav{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--line);
+  background:rgba(13,17,25,.92);backdrop-filter:blur(10px);position:sticky;top:0;z-index:6}
+.brand{display:flex;align-items:center;gap:9px;font-size:16px;color:var(--gold);font-weight:700;
+  flex:1;white-space:nowrap;overflow:hidden}
+.brand img{width:26px;height:26px;border-radius:7px;flex:none}
+.topnav nav{display:flex;gap:6px;align-items:center;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+.topnav nav::-webkit-scrollbar{display:none}
+.topnav nav button{padding:6px 11px;font-size:13px;white-space:nowrap;
+  background:transparent;border-color:transparent;color:var(--dim)}
+.topnav nav button:hover{color:var(--gold);border-color:var(--line)}
+header.gbar{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--line);
+  background:linear-gradient(180deg,#141a26,#0d1119);position:sticky;top:0;z-index:5}
+header.gbar h1{font-size:15px;margin:0;color:var(--gold);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+header.gbar .hbtn{padding:6px 9px;font-size:13px}
+.scroll{flex:1;overflow-y:auto;padding:14px 12px;-webkit-overflow-scrolling:touch}
+
+#installBar{display:flex;align-items:center;gap:10px;margin:0 0 14px;padding:10px 13px;
+  border:1px solid var(--line);border-radius:11px;background:linear-gradient(90deg,#1a2130,#121620);font-size:13px}
+#installBar .ic{width:26px;height:26px;flex:none;border-radius:7px}
+#installBar .t{flex:1;color:var(--dim);line-height:1.5}
+#installBar .t b{color:var(--txt)}
+
+#worldGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:13px}
+@media(max-width:520px){#worldGrid{grid-template-columns:repeat(2,1fr);gap:10px}}
+.wcard{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--bg2);
+  display:flex;flex-direction:column;transition:.15s}
+.wcard:hover{border-color:var(--gold);transform:translateY(-2px)}
+.wcard .cover{aspect-ratio:3/4;background-size:cover;background-position:center;position:relative;cursor:pointer}
+.wcard .cover .ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-size:34px;color:rgba(232,195,122,.5)}
+.wcard .cover .badge{position:absolute;left:7px;bottom:7px;background:rgba(8,11,17,.82);
+  border:1px solid var(--line);border-radius:999px;padding:2px 9px;font-size:11.5px;color:var(--dim)}
+.wcard .wb{padding:9px 10px 10px;display:flex;flex-direction:column;gap:5px;flex:1}
+.wcard .wn{font-size:13.5px;color:var(--txt);line-height:1.45;display:-webkit-box;
+  -webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.wcard .wd{font-size:11.5px;color:var(--dim2);line-height:1.5;display:-webkit-box;
+  -webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:17px}
+.wcard .wa{display:flex;gap:6px;margin-top:auto}
+.wcard .wa button{flex:1;padding:6px 8px;font-size:12.5px}
+.wcard .wa button.mini{flex:none;padding:6px 9px}
+#emptyState{background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:26px 20px;
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:16px}
+#emptyState .txt{flex:1;min-width:180px;color:var(--dim);font-size:15px}
+#emptyState button{font-size:15px;padding:11px 22px}
+
+#chat{flex:1;overflow-y:auto;padding:14px 12px 6px}
+.msg{margin-bottom:16px;display:flex;flex-direction:column}
+.msg .who{font-size:12px;color:var(--dim2);margin-bottom:4px}
+.msg.user{align-items:flex-end}
+.msg.user .body{background:#1c2942;border:1px solid #2b3d5e;border-radius:12px 12px 4px 12px;
+  padding:9px 13px;max-width:88%;white-space:pre-wrap;word-break:break-word}
+.msg.ai .body{background:var(--bg2);border:1px solid var(--line);border-radius:12px 12px 12px 4px;
+  padding:11px 14px;max-width:100%;word-break:break-word}
+.msg.err .body{background:#2a1518;border-color:#5a2b2b;color:#f0b0b0}
+.body h1,.body h2,.body h3{color:var(--gold);margin:14px 0 6px;font-size:15px;line-height:1.5}
+.body h1{font-size:17px}.body h2{font-size:16px}
+.body p{margin:8px 0}
+.body ul,.body ol{margin:8px 0;padding-left:22px}
+.body li{margin:3px 0}
+.body code{background:#0d1219;border:1px solid var(--line);border-radius:4px;padding:1px 5px;
+  font-family:Consolas,Menlo,monospace;font-size:13px;color:var(--cyan)}
+.body pre{background:#080b11;border:1px solid var(--line);border-radius:8px;padding:10px 12px;overflow-x:auto;margin:10px 0}
+.body pre code{background:none;border:none;padding:0;color:#c8d6e8;font-size:13px;display:block;white-space:pre;line-height:1.65}
+.body blockquote{border-left:3px solid var(--line);margin:8px 0;padding:2px 0 2px 12px;color:var(--dim)}
+.body table{border-collapse:collapse;width:100%;margin:10px 0;font-size:13.5px}
+.body th,.body td{border:1px solid var(--line);padding:5px 8px;text-align:left}
+.body th{background:var(--bg3);color:var(--dim)}
+.body strong{color:#fff}
+.body hr{border:none;border-top:1px solid var(--line);margin:12px 0}
+.opts{display:flex;flex-direction:column;gap:7px;margin-top:10px}
+.opts button{text-align:left;font-size:13.5px;line-height:1.6;padding:8px 12px;border-radius:9px;
+  background:#1b2434;border-color:#31405a;color:#cfdcef;white-space:normal;width:100%}
+.opts button:hover{border-color:var(--gold);color:var(--gold)}
+.opts button .k{display:inline-block;min-width:17px;color:var(--gold);font-weight:700;margin-right:6px}
+.opts button.free{border-color:#33475f;color:var(--blue)}
+.opts button.sys{border-color:#463a63;color:var(--purple)}
+.opts .otitle{font-size:12px;color:var(--dim2);margin-bottom:1px}
+#status{font-size:12px;color:var(--dim2);padding:2px 12px 0;min-height:16px}
+footer{border-top:1px solid var(--line);background:#0d1119;padding:8px 10px 12px;
+  padding-bottom:calc(12px + env(safe-area-inset-bottom))}
+#quick{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;scrollbar-width:none}
+#quick::-webkit-scrollbar{display:none}
+#quick button{white-space:nowrap;font-size:12.5px;padding:4px 10px;color:var(--dim)}
+#inputRow{display:flex;gap:8px;align-items:flex-end}
+#input{flex:1;resize:none;min-height:44px;max-height:150px;line-height:1.55}
+#send{min-width:66px;height:44px;border-color:var(--gold);color:var(--gold);background:#1e2534;font-size:15px}
+
+.drawer{position:fixed;inset:0;background:rgba(4,6,10,.72);z-index:20;display:none}
+.drawer.on{display:block}
+.panel{position:absolute;right:0;top:0;bottom:0;width:min(600px,100%);background:var(--bg2);
+  border-left:1px solid var(--line);display:flex;flex-direction:column}
+.panel .ph{display:flex;align-items:center;gap:8px;padding:12px;border-bottom:1px solid var(--line)}
+.panel .ph h2{margin:0;font-size:15px;color:var(--gold);flex:1}
+.panel .pb{flex:1;overflow-y:auto;padding:14px}
+.panel .pf{padding:12px;border-top:1px solid var(--line);display:flex;gap:8px;flex-wrap:wrap}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.tabs button{border-radius:999px;padding:5px 13px;color:var(--dim);font-size:13px}
+.tabs button.on{border-color:var(--gold);color:var(--gold);background:#20273a}
+.card{background:var(--bg3);border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:12px}
+.card h3{margin:0 0 8px;font-size:14px;color:var(--blue)}
+.row{display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap}
+.row>label{color:var(--dim);font-size:13.5px;min-width:88px}
+.row input,.row select{flex:1;min-width:80px}
+.hint{color:var(--dim2);font-size:12.5px;line-height:1.65}
+.out{background:#080b11;border:1px solid var(--line);border-radius:8px;padding:10px;
+  font-family:Consolas,Menlo,monospace;font-size:13px;white-space:pre-wrap;color:#a9c4e0;
+  max-height:240px;overflow:auto;margin-top:8px}
+.chk{display:flex;align-items:center;gap:7px;margin-bottom:7px;font-size:14px}
+.chk input{width:auto;flex:none}
+.slot{border:1px solid var(--line);border-radius:9px;padding:10px;margin-bottom:9px;background:var(--bg3)}
+.slot .t{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.slot .d{font-size:12px;color:var(--dim2);margin-top:3px}
+textarea.arch{min-height:74px;font-size:14px}
+textarea.proto{min-height:60vh;font-size:13.5px;line-height:1.7;font-family:Consolas,Menlo,monospace}
+#cdrop{border:2px dashed var(--line);border-radius:12px;padding:22px 16px;text-align:center;
+  cursor:pointer;background:#0e1117;margin-bottom:12px}
+#cdrop:hover,#cdrop.on{border-color:var(--gold);background:#141926}
+#cdrop.has{border-style:solid;border-color:var(--green)}
+#cdrop .big{color:var(--gold);font-size:15px;margin-bottom:5px}
+#cdrop .small{color:var(--dim2);font-size:12.5px;line-height:1.6}
+#coverPick{display:flex;gap:10px;align-items:center}
+#coverPrev{width:66px;height:88px;border-radius:8px;border:1px solid var(--line);flex:none;
+  background:#0e1117 center/cover no-repeat;display:flex;align-items:center;justify-content:center;
+  color:var(--dim2);font-size:11px;cursor:pointer;text-align:center}
+.toast{position:fixed;left:50%;bottom:78px;transform:translateX(-50%);background:#20273a;
+  border:1px solid var(--gold);color:var(--gold);padding:8px 16px;border-radius:999px;font-size:13.5px;
+  z-index:40;opacity:0;pointer-events:none;transition:.25s;max-width:88vw;text-align:center}
+.toast.on{opacity:1}
+.spin{display:inline-block;width:12px;height:12px;border:2px solid var(--dim2);
+  border-top-color:var(--gold);border-radius:50%;animation:sp .8s linear infinite;vertical-align:-1px}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* ══════════ 结构化状态面板 ══════════ */
+.pv-tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.pv-tab{background:var(--bg3);border:1px solid var(--line);color:var(--dim);border-radius:999px;padding:5px 12px;font-size:13px;cursor:pointer;font-family:inherit;transition:.15s}
+.pv-tab:hover{color:var(--txt);border-color:var(--gold)}
+.pv-tab.on{background:var(--gold);border-color:var(--gold);color:#131313;font-weight:700}
+.pv-n{opacity:.7;font-size:11px;margin-left:2px}
+.pv-body{min-height:140px}
+.pv-sec{margin-bottom:16px}
+.pv-sec h4{margin:0 0 8px;font-size:13px;color:var(--gold);font-weight:600;letter-spacing:.5px}
+.pv-list{display:flex;flex-direction:column;gap:8px}
+.pv-item,.pv-card{background:var(--bg3);border:1px solid var(--line);border-radius:10px;padding:9px 12px}
+.pv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.pv-main{font-weight:600;color:var(--txt);font-size:14px}
+.pv-sub{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 12px;margin-top:6px;font-size:12px;color:var(--dim)}
+.pv-f{display:inline-flex;align-items:center;gap:4px}
+.pv-f b{color:var(--dim2);font-weight:400;white-space:nowrap;flex-shrink:0}
+.pv-kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:13px}
+.pv-k{color:var(--dim2);white-space:nowrap}
+.pv-v{color:var(--txt);min-width:0;word-break:break-word}
+.pv-h{font-weight:600;margin:10px 0 6px;color:var(--gold);font-size:13px}
+.pv-num{color:var(--gold);font-weight:600}
+.pv-unit{color:var(--dim2);font-size:11px;margin-left:2px}
+.pv-mute{color:var(--dim2)}
+.pv-json{color:var(--dim);font-size:11px;word-break:break-all}
+.pv-tag{display:inline-block;background:rgba(125,184,240,.14);color:var(--blue);border-radius:6px;padding:1px 7px;margin:1px 3px 1px 0;font-size:11px}
+.pv-enum{display:inline-block;background:rgba(232,195,122,.14);color:var(--gold);border-radius:6px;padding:1px 8px;font-size:12px}
+.pv-ref{color:var(--blue);text-decoration:underline dotted}
+.pv-bar{display:inline-block;width:84px;height:7px;background:var(--bg);border-radius:4px;overflow:hidden;vertical-align:middle;border:1px solid var(--line)}
+.pv-bar-in{display:block;height:100%;border-radius:3px}
+.pv-bar-in.hi{background:var(--green)}
+.pv-bar-in.mid{background:var(--gold)}
+.pv-bar-in.lo{background:var(--red)}
+.pv-bart{font-size:11px;color:var(--dim);margin-left:6px}
+.wp{display:flex;flex-wrap:wrap;gap:4px;margin:7px 0 3px;min-height:19px}
+.wchip{font-size:11px;line-height:1.5;padding:1px 7px;border-radius:9px;background:#1b2130;
+  border:1px solid #2a3345;color:#c9d3e4;white-space:nowrap}
+.wchip.off{opacity:.42}
+.wchip.none{color:#6f7b90;background:transparent;border:0;padding-left:0;font-size:11px}
+.wchip b{color:var(--gold);font-weight:600}
+.pv-tab.dim{opacity:.45}
+.pv-tab.dim.on{opacity:.75}
+.pv-fill{margin-top:2px}
+.pv-empty{color:var(--dim2);font-size:13px;padding:26px 0;text-align:center;line-height:1.9}
+.pv-tw{overflow-x:auto}
+.pv-table{width:100%;border-collapse:collapse;font-size:13px}
+.pv-table th{text-align:left;color:var(--dim2);font-weight:500;padding:6px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.pv-table td{padding:7px 10px;border-bottom:1px solid rgba(37,45,61,.5);color:var(--txt)}
+.pv-text{font-size:13px;color:var(--dim);line-height:1.9;white-space:pre-wrap}
+.pv-line{margin-bottom:4px;font-size:13px}
+.pv-tl{border-left:2px solid var(--line);padding-left:14px}
+.pv-tl-i{position:relative;margin-bottom:12px}
+.pv-tl-i::before{content:'';position:absolute;left:-19px;top:5px;width:7px;height:7px;border-radius:50%;background:var(--gold)}
+.pv-tl-d{font-size:11px;color:var(--dim2);margin-bottom:2px}
+.pv-tl-t{font-size:13px;color:var(--txt);line-height:1.7}
+.pv-roll{display:inline-block;margin-left:8px;padding:1px 8px;border-radius:6px;font-size:11px;background:rgba(125,184,240,.14);color:var(--blue)}
+.pv-roll.ok{background:rgba(99,198,138,.16);color:var(--green)}
+.pv-roll.no{background:rgba(224,106,106,.16);color:var(--red)}
+
+/* ══════════ 顶部标签栏（切整页） ══════════ */
+#topTabs{display:flex;gap:6px;overflow-x:auto;padding:8px 12px;border-bottom:1px solid var(--line);
+  background:#0d1119;scrollbar-width:none;flex-shrink:0}
+#topTabs::-webkit-scrollbar{display:none}
+#topTabs button{white-space:nowrap;font-size:13px;padding:5px 13px;border-radius:999px;color:var(--dim);flex-shrink:0}
+#topTabs button.on{border-color:var(--gold);color:var(--gold);background:#20273a;font-weight:600}
+#topTabs .tn{opacity:.65;font-size:11px;margin-left:4px}
+
+/* ══════════ 页面容器 ══════════ */
+#gameBody{flex:1;position:relative;overflow:hidden;display:flex;min-height:0}
+.gpage{display:none;flex:1;min-width:0;flex-direction:column;min-height:0}
+.gpage.on{display:flex}
+#pageStory{overflow-y:auto;padding:14px 12px 8px}
+#pageData{overflow-y:auto;padding:14px 12px}
+#pageMemo{overflow:hidden}
+#pageMemo #chat{flex:1;overflow-y:auto;padding:14px 12px 6px}
+.view.panelmode footer{display:none}
+
+/* ══════════ 场景卡片 ══════════ */
+.scene-card{background:var(--bg2);border:1px solid var(--line);border-radius:14px;
+  padding:16px 18px;box-shadow:0 2px 18px rgba(0,0,0,.28)}
+.sc-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.sc-badge{font-size:11px;padding:2px 9px;border-radius:999px;background:rgba(232,195,122,.14);color:var(--gold)}
+.sc-badge.ai{background:rgba(125,184,240,.13);color:var(--blue)}
+.sc-title{font-size:19px;margin:0 0 12px;color:var(--txt);font-weight:700;line-height:1.4}
+.sc-body{font-size:14.5px;line-height:1.95;color:var(--txt)}
+.sc-rolls{margin-top:12px;display:flex;flex-direction:column;gap:6px}
+.sc-roll{font-size:12.5px;color:var(--dim);background:var(--bg3);border:1px solid var(--line);
+  border-radius:8px;padding:6px 10px}
+.sc-roll b{color:var(--gold);font-weight:600}
+.sc-roll .rok{color:var(--green)}.sc-roll .rno{color:var(--red)}
+.sc-foot{margin-top:14px;display:flex;justify-content:flex-end;gap:8px}
+.sc-your{font-size:12.5px;color:var(--dim2);margin-bottom:8px;line-height:1.6}
+.sc-your b{color:var(--blue);font-weight:500}
+
+/* ══════════ 选项大按钮 ══════════ */
+.opts-wrap{padding-bottom:8px}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opts .otitle{font-size:12px;color:var(--dim2);margin-bottom:2px}
+.opts button{width:100%;text-align:left;font-size:14px;line-height:1.6;padding:12px 16px;
+  border-radius:11px;background:var(--bg3);border:1px solid var(--line);color:var(--txt)}
+.opts button:hover{border-color:var(--gold);color:var(--gold);background:#1e2534}
+.opts button.main{border-color:#3a4d6e;background:#1b2740}
+.opts button .k{display:inline-block;min-width:18px;color:var(--gold);font-weight:700;margin-right:7px}
+.opts button.ghost{color:var(--dim);font-size:12.5px;padding:7px 12px;background:transparent;border-style:dashed}
+.opts button.free{border-color:#33475f;color:var(--blue)}
+.opts button.sys{border-color:#463a63;color:var(--purple)}
+.opts-hid{display:flex;flex-direction:column;gap:8px}
+.opts-hid[hidden]{display:none}
+</style>
+</head>
+<body>
+
+<!-- ══════════ 世界列表 ══════════ -->
+<div class="view on" id="viewLib">
+  <header class="topnav">
+    <div class="brand"><img src="icons/favicon-32.png" alt=""/><span>文字游戏工坊</span></div>
+    <nav>
+      <button id="navCreate">创建世界</button>
+      <button id="navPack">世界包</button>
+      <button id="navModel">模型配置</button>
+      <button id="navProto">主持协议</button>
+      <button id="navInstall" hidden>安装应用</button>
+    </nav>
+  </header>
+  <div class="scroll">
+    <div id="installBar" hidden>
+      <img class="ic" src="icons/favicon-32.png" alt=""/>
+      <div class="t">把 <b>文字游戏工坊</b> 安装到主屏幕，从桌面直接进入</div>
+      <button id="installBtn">安装</button>
+      <button class="tiny" id="installClose">✕</button>
+    </div>
+
+    <div id="emptyState" hidden>
+      <div class="txt">还没有世界。</div>
+      <button class="primary" id="createFirst">创建第一个世界 →</button>
+    </div>
+
+    <div id="worldGrid"></div>
+    <div id="upLog" class="hint" style="margin-top:12px"></div>
+    <div class="hint" style="margin-top:14px;text-align:center">
+      📴 规则书存在这台设备的浏览器里，AI 直连 —— <b>电脑关机也能玩</b>
+    </div>
+    <div class="hint" style="margin-top:8px;text-align:center;font-size:12px;opacity:.5" id="verLine"></div>
+  </div>
+</div>
+
+<!-- ══════════ 对局 ══════════ -->
+<div class="view" id="viewGame">
+  <header class="gbar">
+    <button class="hbtn" id="bBack">← 返回</button>
+    <h1 id="gameTitle">…</h1>
+    <button class="hbtn" id="bPanels">📋</button>
+    <button class="hbtn" id="bDice">🎲</button>
+    <button class="hbtn" id="bArch">📜</button>
+    <button class="hbtn" id="bSave">💾</button>
+    <button class="hbtn" id="bNotes">✎</button>
+    <button class="hbtn" id="bCfg">⚙️</button>
+  </header>
+  <nav id="topTabs"></nav>
+  <div id="gameBody">
+    <section class="gpage on" id="pageStory">
+      <div id="sceneWrap"></div>
+      <div id="optWrap" class="opts-wrap"></div>
+    </section>
+    <section class="gpage" id="pageData"></section>
+    <section class="gpage" id="pageMemo"><div id="chat"></div></section>
+  </div>
+  <div id="status"></div>
+  <footer>
+    <div id="quick">
+      <button data-q="开始吧。">开局</button>
+      <button data-q="继续">继续</button>
+      <button data-q="读取档案并复述我当前的状态。">查状态</button>
+      <button data-q="输出我的记忆归档。">归档</button>
+      <button data-q="进入慢节奏，详细描写。">慢节奏</button>
+      <button data-q="回到快节奏推进。">快节奏</button>
+    </div>
+    <div id="inputRow">
+      <textarea id="input" placeholder="点选项，或写下你想做的任何事……"></textarea>
+      <button id="send" class="primary">发送</button>
+    </div>
+  </footer>
+</div>
+
+<!-- 创建 / 编辑世界 -->
+<div class="drawer" id="dWorld"><div class="panel">
+  <div class="ph"><h2 id="wTitle">创建世界</h2><button class="tiny" data-close>关闭</button></div>
+  <div class="pb">
+    <div id="cdrop">
+      <div class="big">把规则书拖到这里</div>
+      <div class="small">支持 <b>.docx</b> / <b>.txt</b> / <b>.md</b>　·　解析全部在这台设备上完成，不上传任何服务器</div>
+    </div>
+    <input type="file" id="cfile" accept=".docx,.txt,.md" hidden/>
+    <div class="card">
+      <h3>世界信息</h3>
+      <div class="row"><label>世界名称</label><input id="wName" placeholder="例：超神机械师"/></div>
+      <div class="row" style="align-items:flex-start">
+        <label>一句话简介</label>
+        <textarea id="wDesc" style="min-height:58px" placeholder="例：在破碎星环白手起家，走一条属于自己的黑星之路"></textarea>
+      </div>
+      <div class="row" style="align-items:flex-start">
+        <label>封面图</label>
+        <div style="flex:1">
+          <div id="coverPick">
+            <div id="coverPrev">点击<br/>选择</div>
+            <div class="hint">竖版效果最好（3:4）。<br/>不传就用自动生成的星空封面。</div>
+          </div>
+          <input type="file" id="coverFile" accept="image/*" hidden/>
+        </div>
+      </div>
+    </div>
+    <div class="hint" id="wHint"></div>
+  </div>
+  <div class="pf">
+    <button class="primary" id="wSave">创建世界</button>
+    <button id="wCancel">取消</button>
+    <button id="wPreview" hidden>预览</button>
+    <button id="wExport" hidden>导出世界包</button>
+    <button id="wDelete" hidden style="border-color:#5a2b2b;color:#e0a0a0">删除</button>
+  </div>
+</div></div>
+
+<!-- 世界包 -->
+<div class="drawer" id="dPack"><div class="panel">
+  <div class="ph"><h2>世界包 / 备份</h2><button class="tiny" data-close>关闭</button></div>
+  <div class="pb">
+    <div class="hint" style="margin-bottom:12px">
+      世界包 = 规则书正文 ＋ 名称 ＋ 简介 ＋ 封面 ＋ 补充设定，打包成一个 <code>.json</code>。<br/>
+      和电脑版工坊的世界包<b>格式互通</b>——手机导出，电脑导入，反之亦然。
+    </div>
+    <div class="card">
+      <h3>导出单个世界</h3>
+      <select id="packSel"></select>
+      <div style="margin-top:9px"><button id="packExport">导出这个世界</button></div>
+    </div>
+    <div class="card">
+      <h3>导入世界包</h3>
+      <div class="hint">选一个 <code>.json</code> 世界包导入</div>
+      <div style="margin-top:9px"><button id="packImport">选择文件</button></div>
+    </div>
+    <div class="card">
+      <h3>整机备份（推荐换设备前做）</h3>
+      <div class="hint">把<b>全部世界 ＋ 存档 ＋ 主持协议 ＋ 设置</b>打成一个文件。<br/>不含 API Key。</div>
+      <div style="margin-top:9px;display:flex;gap:8px;flex-wrap:wrap">
+        <button id="backupExport">导出全部</button>
+        <button id="backupImport">从备份恢复</button>
+      </div>
+    </div>
+  </div>
+</div></div>
+
+<!-- 骰子房 -->
+<div class="drawer" id="dDice"><div class="panel">
+  <div class="ph"><h2>🎲 骰子房</h2><button class="tiny" data-close>关闭</button></div>
+  <div class="pb">
+    <div class="hint" style="margin-bottom:10px">真随机（浏览器加密随机源），结果带骰源明细。复制后粘进对话，AI 不得重掷或改写。</div>
+    <div class="tabs" id="diceTabs">
+      <button class="on" data-t="d20">1d20 判定</button>
+      <button data-t="d100">1d100 判定</button>
+      <button data-t="opp">对抗判定</button>
+      <button data-t="free">自由骰式</button>
+    </div>
+    <div id="diceBody"></div>
+  </div>
+  <div class="pf"><button class="primary" id="diceRoll">掷骰</button><button id="diceCopy">复制结果</button></div>
+</div></div>
+
+<!-- 记忆归档 -->
+<div class="drawer" id="dArch"><div class="panel">
+  <div class="ph"><h2>📜 记忆归档</h2><button class="tiny" data-close>关闭</button></div>
+  <div class="pb">
+    <div class="hint" style="margin-bottom:10px">把 AI 每回合输出的「📜 记忆归档」粘进来，或手填。换会话时点「注入对话」就能接上。</div>
+    <div class="card"><h3>① 角色卡</h3><textarea class="arch" id="a1"></textarea></div>
+    <div class="card"><h3>② 属性数值</h3><textarea class="arch" id="a2"></textarea></div>
+    <div class="card"><h3>③ 关系网</h3><textarea class="arch" id="a3"></textarea></div>
+    <div class="card"><h3>④ 因果／恩怨</h3><textarea class="arch" id="a4"></textarea></div>
+    <div class="card"><h3>⑤ 大事记</h3><textarea class="arch" id="a5"></textarea></div>
+    <div class="card"><h3>⑥ 成就与标签</h3><textarea class="arch" id="a6"></textarea></div>
+    <div class="card"><h3>⑦ 系统／特殊</h3><textarea class="arch" id="a7"></textarea></div>
+  </div>
+  <div class="pf"><button class="primary" id="archSave">保存</button><button id="archInject">注入对话</button></div>
+</div></div>
+
+<!-- 补充设定 -->
+<div class="drawer" id="dNotes"><div class="panel">
+  <div class="ph"><h2>✎ 本书补充设定 / 裁定</h2><button class="tiny" data-close>关闭</button></div>
+  <div class="pb">
+    <div class="hint" style="margin-bottom:10px">
+      只对这个世界生效。规则书有矛盾、缺漏、或你想改数值时写在这里——<b>它会作为「最高优先级」插在规则书原文之前</b>。<br/>
+      例：「第3章和第7章的寿命表冲突，以第7章为准」「禁止出现 XX 情节」。
+    </div>
+    <textarea id="notes" style="min-height:56vh;font-size:13.5px;line-height:1.7"></textarea>
+  </div>
+  <div class="pf"><button class="primary" id="notesSave">保存</button></div>
+</div></div>
+
+<!-- 存档 -->
+<div class="drawer" id="dSave"><div class="panel">
+  <div class="ph"><h2>💾 存档</h2><button class="tiny" data-close>关闭</button></div>
+  <div class="pb"><div id="slotList"></div></div>
+  <div class="pf"><button class="primary" id="saveNew">新建存档</button><button id="saveExport">导出存档</button><button id="saveImport">导入</button></div>
+</div></div>
+
+<!-- 主持协议 -->
+<div class="drawer" id="dProto"><div class="panel">
+  <div class="ph"><h2>主持协议（所有世界共用）</h2><button class="tiny" data-close>关闭</button></div>
+  <div class="pb">
+    <div class="hint" style="margin-bottom:10px">
+      这是「怎么主持」的通用章法，适用于任何规则书。具体设定一律以规则书原文为准。<br/>
+      存在这台设备上；换设备请用「整机备份」迁移。
+    </div>
+    <div class="hint" id="protoHint" style="margin-bottom:10px"></div>
+    <textarea class="proto" id="protoText"></textarea>
+  </div>
+  <div class="pf"><button class="primary" id="protoSave">保存</button><button id="protoReset">恢复默认</button></div>
+</div></div>
+
+<!-- 设置 -->
+<!-- 结构化状态面板 -->
+<div class="drawer" id="dPanels"><div class="panel">
+  <div class="ph"><h2>📋 状态面板</h2><button class="tiny" data-close>关闭</button></div>
+  <div class="pb">
+    <div class="pv-tabs" id="pvTabs"></div>
+    <div class="pv-body" id="pvBody"></div>
+  </div>
+  <div class="pf"><span class="hint" id="pvHint" style="flex:1"></span><button id="pvReset">重置状态</button></div>
+</div></div>
+
+<div class="drawer" id="dCfg"><div class="panel">
+  <div class="ph"><h2>⚙️ 设置 <span id="verCfg" style="font-size:12px;font-weight:400;opacity:.5"></span></h2><button class="tiny" data-close>关闭</button></div>
+  <div class="pb">
+    <div class="card">
+      <h3>模型服务</h3>
+      <div class="row"><label>API Key</label><input id="cKey" type="password" placeholder="sk-..."/></div>
+      <div class="row"><label>接口地址</label><input id="cBase" placeholder="https://api.deepseek.com"/></div>
+      <div class="row"><label>模型</label><input id="cModel" placeholder="deepseek-chat"/></div>
+      <div class="row"><label>温度</label><input id="cTemp" type="number" step="0.1" min="0" max="2"/></div>
+      <div class="hint">
+        Key 只存在这台设备上。<b>本版没有服务器</b>——浏览器直接请求你填的接口地址（DeepSeek 允许跨域直连，已实测）。
+      </div>
+    </div>
+    <div class="card">
+      <h3>每局发送什么</h3>
+      <div class="chk"><input type="checkbox" id="uProto" checked/><span>通用主持协议（强烈建议保留）</span></div>
+      <div class="chk"><input type="checkbox" id="uNotes" checked/><span>本书补充设定</span></div>
+      <div class="hint" id="promptHint">—</div>
+    </div>
+    <div class="card">
+      <h3>⚡ 速度</h3>
+      <div class="chk"><input type="checkbox" id="uNoThink" checked/><span>关闭思考链（更快；主持质量可能略降）</span></div>
+      <div class="row"><label>规则书发送范围</label>
+        <select id="uBookLimit">
+          <option value="auto">智能检索（推荐 · 只发相关章节原文）</option>
+          <option value="0">全文（最准，最慢）</option>
+          <option value="300000">只发前 30 万字</option>
+          <option value="150000">只发前 15 万字</option>
+        </select>
+      </div>
+      <div class="hint" id="speedHint">—</div>
+    </div>
+    <div class="card">
+      <h3>交互</h3>
+      <div class="chk"><input type="checkbox" id="cOpts" checked/><span>把选项变成可点按钮</span></div>
+      <div class="hint">「选项 0 自由行动」点了会跳到输入框。</div>
+    </div>
+    <div class="card">
+      <h3>上下文</h3>
+      <div class="hint" id="ctxHint">—</div>
+      <div class="row" style="margin-top:8px">
+        <button class="tiny" id="ctxCompress">压缩上下文（保留归档）</button>
+        <button class="tiny" id="ctxClear">清空本局对话</button>
+        <button class="tiny" id="stateReset">重置结构化状态</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3>🔍 出问题了？</h3>
+      <div class="hint">面板重复、某个面板不显示、状态栏出现 ⚠️……点下面按钮生成「自检报告」，整段发我就能直接定位。</div>
+      <div style="margin-top:9px"><button class="tiny" id="openDiag">打开自检报告</button></div>
+    </div>
+    <div class="card">
+      <h3>存储占用</h3>
+      <div class="hint" id="quotaHint">—</div>
+    </div>
+  </div>
+  <div class="pf"><button class="primary" id="cfgSave">保存设置</button></div>
+</div></div>
+
+<div class="drawer" id="dDiag"><div class="panel">
+  <div class="ph"><h2>🔍 自检报告</h2><button class="tiny" data-close>关闭</button></div>
+  <div class="pb">
+    <div class="card">
+      <div class="hint">下面是这台设备此刻的状态。<b>点「复制全部」发给我即可</b>——只含版本、面板结构与错误记录，<b>不含 API Key</b>。</div>
+      <div style="margin-top:9px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="tiny primary" id="diagCopy">复制全部</button>
+        <button class="tiny" id="diagBuild">重新生成</button>
+      </div>
+    </div>
+    <pre id="diagBox" style="white-space:pre-wrap;word-break:break-all;font-size:12px;line-height:1.65;background:#0d1117;border:1px solid #223;border-radius:8px;padding:10px;max-height:58vh;overflow:auto;margin:0"></pre>
+  </div>
+</div></div>
+
+<div class="toast" id="toast"></div>
+
+<script src="protocol-default.js"></script>
+<script src="docx-browser.js"></script>
+<script src="state.js"></script>
+<script src="retrieval.js"></script>
+<script src="render.js"></script>
+<script>
+'use strict';
+const $ = (s) => document.querySelector(s);
+
+/* ══════════════════════════════════════════════════════════════
+   版本号 —— 想改就改这一行（书库首页底部和设置面板会一起变）。
+   看到手机上显示的版本号，就知道它加载的是哪一版。
+   ══════════════════════════════════════════════════════════════ */
+const APP_VER = 'v2.23';
+const $$ = (s) => Array.from(document.querySelectorAll(s));
+
+function toast(msg, ms) {
+  const t = $('#toast'); t.textContent = msg; t.classList.add('on');
+  clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('on'), ms || 2400);
+}
+const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+/* ============================================================ Markdown */
+/* 把 AI 误用的 LaTeX 变成纯文本。
+   有的规则书里有「面板美化（LaTeX）」这种选项，AI 选了就真去输出
+   \textcolor{#FFD700}{胎穿} 这种东西 —— 网页不认，会直接显示成源码。
+   这里做一次兜底转换：去掉颜色/字体命令、把装饰命令换成纯文本。 */
+function deLatex(s) {
+  let t = String(s == null ? '' : s);
+  if (t.indexOf('\\') < 0) return t;
+  t = t.replace(/\\[()\[\]]/g, '');                          // \( \) \[ \]
+  t = t.replace(/\$\$?/g, '');                               // $ $$
+  t = t.replace(/\\colorbox\{[^}]*\}\{/g, '');               // \colorbox{c}{X} → X
+  t = t.replace(/\\fcolorbox\{[^}]*\}\{[^}]*\}\{/g, '');
+  t = t.replace(/\\textcolor\{[^}]*\}\{/g, '');              // \textcolor{c}{X} → X
+  t = t.replace(/\\(?:overline|underline|textbf|textit|emph|textsf|texttt|textrm|mbox|mathrm|mathbf|mathit)\b\s*/g, '');
+  t = t.replace(/\\(?:qquad|quad|hspace|vspace)\*?(\{[^}]*\})?/g, '  ');
+  t = t.replace(/\\(?:large|Large|LARGE|huge|Huge|small|footnotesize|scriptsize|tiny|normalsize|bfseries|itshape|ttfamily|sffamily|rmfamily|centering|noindent|hline|newline|par|bigskip|medskip|smallskip)\b\s*/g, '');
+  t = t.replace(/\\[a-zA-Z]+\*?(\[[^\]]*\])?/g, '');         // 兜底：其它 \命令
+  t = t.replace(/[{}\\]/g, '');                              // 剩下的花括号反斜杠
+  return t;
+}
+
+/* 判断这是不是「多选题组填表」步骤：
+     A. 前世身份（选一，或自定义）  1. 凡人  2. 武将 …
+     B. 前世死因（选一，或自定义）  1. 寿终  2. 战死 …
+     请一次性告诉我四项的编号（例：A1 B5 C3 D2）
+   ≥3 个字母字段组，或 ≥2 组 + 提到「一次性/编号例」就算。
+   这种步骤给「选一个」的按钮是误导 —— 点「凡人」只会发一个 1，凑不齐四项。 */
+function isFormStep(raw) {
+  const s = String(raw == null ? '' : raw);
+  const groups = (s.match(/^[ \t]*[*【]?[ \t]*[A-DＡ-Ｄ][.、．)）:：]/gm) || []).length;
+  const words = /请一次性|一次性告诉|例[:：]\s*[A-ZＡ-Ｚ]\d|编号（例|分别告诉我|四项的编号|三项的编号|两项的编号/.test(s);
+  return groups >= 3 || (groups >= 2 && words);
+}
+
+function md(src) {
+  const lines = String(src).replace(/\r\n/g, '\n').split('\n');
+  let out = '', inCode = false, list = null, tbl = null;
+  const closeList = () => { if (list) { out += '</' + list + '>'; list = null; } };
+  const closeTbl = () => { if (tbl) { out += '</tbody></table>'; tbl = null; } };
+  const inline = (s) => esc(s)
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, '$1<em>$2</em>');
+  for (let i = 0; i < lines.length; i++) {
+    const raw = lines[i];
+    if (/^\s*```/.test(raw)) {
+      if (!inCode) { closeList(); closeTbl(); out += '<pre><code>'; inCode = true; }
+      else { out += '</code></pre>'; inCode = false; }
+      continue;
+    }
+    if (inCode) { out += esc(raw) + '\n'; continue; }
+    if (!raw.trim()) { closeList(); closeTbl(); continue; }
+    if (/^\s*(---+|\*\*\*+)\s*$/.test(raw)) { closeList(); closeTbl(); out += '<hr/>'; continue; }
+    const h = raw.match(/^(#{1,6})\s+(.*)$/);
+    if (h) { closeList(); closeTbl(); const n = Math.min(h[1].length, 3); out += '<h' + n + '>' + inline(h[2]) + '</h' + n + '>'; continue; }
+    if (/^\s*>\s?/.test(raw)) { closeList(); closeTbl(); out += '<blockquote>' + inline(raw.replace(/^\s*>\s?/, '')) + '</blockquote>'; continue; }
+    if (/^\s*\|.*\|\s*$/.test(raw)) {
+      if (/^\s*\|[\s:\-|]+\|\s*$/.test(raw)) continue;
+      const cells = raw.trim().replace(/^\||\|$/g, '').split('|').map((c) => c.trim());
+      if (!tbl) { out += '<table><thead><tr>' + cells.map((c) => '<th>' + inline(c) + '</th>').join('') + '</tr></thead><tbody>'; tbl = true; }
+      else out += '<tr>' + cells.map((c) => '<td>' + inline(c) + '</td>').join('') + '</tr>';
+      continue;
+    }
+    closeTbl();
+    const ul = raw.match(/^\s*[-*+]\s+(.*)$/);
+    if (ul) { if (list !== 'ul') { closeList(); out += '<ul>'; list = 'ul'; } out += '<li>' + inline(ul[1]) + '</li>'; continue; }
+    const ol = raw.match(/^\s*\d+[.)]\s+(.*)$/);
+    if (ol) { if (list !== 'ol') { closeList(); out += '<ol>'; list = 'ol'; } out += '<li>' + inline(ol[1]) + '</li>'; continue; }
+    closeList();
+    out += '<p>' + inline(raw) + '</p>';
+  }
+  if (inCode) out += '</code></pre>';
+  closeList(); closeTbl();
+  return out;
+}
+
+/* ============================================================ 选项按钮 */
+function parseOptions(raw) {
+  const lines = String(raw || '').replace(/\r\n/g, '\n').split('\n');
+  const clean = (s) => deLatex(String(s)).replace(/\*\*/g, '').replace(/^[>*-]\s*/, '').trim();
+  const CIRC = '①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳';
+
+  // 支持四种编号体系：阿拉伯数字 / 英文字母 / 中文数字 / 罗马数字（圈码 ①②③ 单独处理）
+  const CN = { 一: 1, 二: 2, 三: 3, 四: 4, 五: 5, 六: 6, 七: 7, 八: 8, 九: 9, 十: 10,
+               甲: 1, 乙: 2, 丙: 3, 丁: 4, 戊: 5, 己: 6, 庚: 7, 辛: 8, 壬: 9, 癸: 10 };
+  const ROMAN = { 'Ⅰ': 1, 'Ⅱ': 2, 'Ⅲ': 3, 'Ⅳ': 4, 'Ⅴ': 5, 'Ⅵ': 6, 'Ⅶ': 7, 'Ⅷ': 8, 'Ⅸ': 9, 'Ⅹ': 10 };
+  const NUMCH = '[A-Za-z]|[0-9]{1,2}|[一二三四五六七八九十甲乙丙丁戊己庚辛壬癸]|[ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩ]';
+  // 编号与正文之间的分隔符。注意要含间隔号 · —— 模型很爱写「1 · 天选之人」
+  const SEP = '[.、．)）:：·•‧・∙〉》]';
+  function toNum(x) {
+    const s = String(x == null ? '' : x);
+    if (/^[0-9]+$/.test(s)) return parseInt(s, 10);
+    if (/^[A-Za-z]$/.test(s)) return s.toUpperCase().charCodeAt(0) - 64;   // A→1 B→2 C→3
+    if (CN[s]) return CN[s];
+    if (ROMAN[s]) return ROMAN[s];
+    return NaN;
+  }
+
+  // 两种写法都认：
+  //   1. 甲        /  1、甲  /  1）甲   → 编号 + 分隔符 + 正文
+  //   **A**【天命之子】…               → 编号 + 直接跟标题括号（模型常这么写）
+  // 编号后面可能是：分隔符（1. 1·）／直接跟标题括号（**A**【x】）／空白（**1** 正文）
+  // 键帽 emoji（1️⃣ = "1" + U+FE0F + U+20E3）也认。
+  const arabicRe = new RegExp(
+    '^\\s*(?:[>*-]\\s*)?\\*{0,2}(?:选\\s*项|方\\s*案|选\\s*择|第\\s*)?\\s*(' + NUMCH + ')[\\uFE0F\\u20E3]{0,2}\\*{0,2}' +
+    '(?:' +
+    '\\s*' + SEP + '\\s*(\\S.*)' +          // 1. 甲   ／  **1·甲**
+    '|\\s*([【\\[（(].*)' +                    // **A**【标题】
+    '|\\s+(\\S.*)' +                           // **1** 甲 ／ 1 甲（必须有空白）
+    ')$');
+  const boxRe = new RegExp('^\\s*\\*{0,2}【\\s*(' + NUMCH + ')\\s*[·・]\\s*([^】]+)】\\*{0,2}\\s*$');
+  // 【1·标题】/【1 · 标题】/【1】/（1）/ [1]
+  // 括号里数字后面可能还跟着「· 标题」——这时标题就是选项名。
+  // （58 本里至少 6 本用这个格式，之前一个都认不出来。）
+  const brackRe = new RegExp(
+    '^\\s*\\*{0,2}\\s*[【\\[（(]\\s*(' + NUMCH + ')\\s*' +
+    '(?:' + SEP + '\\s*([^】\\]）)]{0,40}?))?\\s*[】\\]）)]\\s*\\*{0,2}\\s*(.*)$');
+
+  // ---- 收集候选 ----
+  // 无编号的短行（作为选项候选）要满足：够短、不带句号/冒号、像标签而不像句子
+  const isPlainLine = (s) =>
+    s.length >= 2 && s.length <= 26 &&
+    !/[:：。！？；;，,、]/.test(s) &&            // 不是「键：值」，也不是句子
+    !/^[#>|`【\[（(]/.test(s) &&                 // 不是标题/表格/代码/区块头
+    !/^[-*•·‣▪]/.test(s) &&                     // 不是项目符号（上面单独处理）
+    !/^[A-Za-z0-9]/.test(s) &&                  // 不是英文/数字开头
+    /[\u4e00-\u9fa5]/.test(s);                  // 必须含中文
+
+  // 正文在哪结束：第一处「记忆归档」或 JSON 代码块。
+  // 之后的内容（归档、JSON）只是附录 —— 既不参与选项识别，也不参与位置计算。
+  // （以前它们会被当成候选，而且因为「最靠后」得分最高，把真正的选项挤掉。）
+  let bodyEnd = lines.length;
+  for (let q = 0; q < lines.length; q++) {
+    if (/^\s*```\s*json/i.test(lines[q]) || /记忆归档|状态归档|【归档】/.test(lines[q])) { bodyEnd = q; break; }
+  }
+  const denom = Math.max(1, bodyEnd - 1);
+
+  // ---- 标出「面板区块」：里面的 ·／• 行是数据，不是选项 ----
+  // 面板长这样：
+  //   ✦ 角色面板 · 星海历 687 年 7 月 11 日
+  //   · 👤 韩萧（代号「零号」）｜F级·机械系｜🎲 天命之子
+  //   · 🟢 生命 100/100 ｜ 🔵 气力 10/10
+  const panelBlock = new Set();
+  {
+    let inPanel = false;
+    for (let z = 0; z < Math.min(bodyEnd, lines.length); z++) {
+      const s2 = lines[z].trim();
+      if (!s2) continue;
+      // 面板抬头：✦／◆／▣ 开头，或含「面板」二字
+      if (/^[✦◆◇▣■]/.test(s2) || /面板|状态栏|状态面板/.test(s2)) { inPanel = true; continue; }
+      if (inPanel && /^[·•‧・‣▪]\s*\S/.test(s2)) { panelBlock.add(z); continue; }
+      if (inPanel && /^[-*]\s+\S/.test(s2) && /[｜|]/.test(s2)) { panelBlock.add(z); continue; }
+      inPanel = false;
+    }
+  }
+
+  const cand = [];
+  let bulletSeq = 0, plainSeq = 0, boldSeq = 0;
+  lines.forEach((rawLine, i) => {
+    if (i >= bodyEnd) return;                 // 附录不参与
+    if (panelBlock.has(i)) return;            // 面板区块里的条目不是选项
+    // 剥掉行首/行尾的框线字符（有的规则书把选项画在方框里：│ A. 甲 │）
+    const l = rawLine.replace(/^[\s│┃║]+/, '').replace(/[\s│┃║]+$/, '');
+    if (!l) return;
+    // 行内多个编号挤在一行（`1. 凡人  2. 武将  3. 书生`）——
+    // 必须抢在下面「整行编号匹配」前面，否则整行会被吃掉当成一个选项。
+    // 只在【同一行出现 ≥2 个编号】时才这么拆。
+    {
+      const tokRe = new RegExp('(^|[\\s\\u3000])(' + NUMCH + ')\\s*' + SEP, 'g');
+      let tm;
+      const hits = [];
+      while ((tm = tokRe.exec(l))) {
+        const nn = toNum(tm[2]);
+        if (nn) hits.push({ n: nn, at: tm.index + tm[1].length });
+      }
+      if (hits.length >= 2) {
+        const stripRe = new RegExp('^(?:' + NUMCH + ')\\s*' + SEP + '\\s*');
+        for (let j = 0; j < hits.length; j++) {
+          const from = hits[j].at;
+          const to = j + 1 < hits.length ? hits[j + 1].at : l.length;
+          const seg = clean(l.slice(from, to).replace(stripRe, ''));
+          if (seg) cand.push({ n: hits[j].n, t: seg, i, c: false, k: 'num', pre: '' });
+        }
+        bulletSeq = 0; plainSeq = 0;
+        return;
+      }
+    }
+    const pushNum = (mm) => {
+      const n = toNum(mm[1]);
+      const t = clean(mm[2] || mm[3] || mm[4] || '');
+      if (!(n >= 1 && n <= 20) || !t) return false;
+      cand.push({ n, t, i, c: false, k: /^[A-Za-z]$/.test(mm[1]) ? 'alpha' : 'num', pre: '' });
+      return true;
+    };
+    let m = l.match(arabicRe);
+    if (m && pushNum(m)) { bulletSeq = 0; plainSeq = 0; return; }
+    m = l.match(boxRe);
+    if (m && pushNum(m)) { bulletSeq = 0; plainSeq = 0; return; }
+    m = l.match(brackRe);
+    if (m) {
+      const nn = toNum(m[1]);
+      const inner = m[2] && m[2].trim();
+      // 括号里写了标题就用标题（【1·帝国皇裔】），否则用括号后面的正文（【1】正文）
+      const label = clean(inner ? m[2] : (m[3] || ''));
+      if (nn >= 1 && nn <= 20 && label) {
+        cand.push({ n: nn, t: label, i, c: false, k: /^[A-Za-z]$/.test(m[1]) ? 'alpha' : 'num', pre: '' });
+        bulletSeq = 0; plainSeq = 0;
+        return;
+      }
+    }
+
+    // ① 项目符号列表（- / * / • / ·）
+    const bm = l.match(/^\s*(?:[-*•·‣▪]\s+)(\S.*)$/);
+    if (bm) {
+      const t = clean(bm[1]);
+      if (t) { bulletSeq++; cand.push({ n: bulletSeq, t, i, c: false, k: 'bullet', pre: '' }); plainSeq = 0; return; }
+    }
+    bulletSeq = 0;
+
+    // ② 圈码：行首优先，同时兜底扫全行（应对「① 甲 ② 乙 ③ 丙」挤在一行）
+    const marks = [];
+    for (let p = 0; p < l.length; p++) {
+      const k = CIRC.indexOf(l[p]);
+      // 圈码前不是「词字符」就当它是列表标记（空格、标点、行首都算）
+      if (k >= 0 && (p === 0 || !/[A-Za-z0-9\u4e00-\u9fa5]/.test(l[p - 1]))) marks.push({ n: k + 1, at: p });
+    }
+    // 行内阿拉伯/中文编号：`1. 凡人  2. 武将  3. 书生` 挤在一行也要能拆开。
+    // 只在【同一行出现 ≥2 个】时才当列表标记，免得把正文里的「第3步」切碎。
+    {
+      const tokRe = new RegExp('(^|[\\s\\u3000])(' + NUMCH + ')\\s*' + SEP, 'g');
+      let tm;
+      const hits = [];
+      while ((tm = tokRe.exec(l))) {
+        const nn = toNum(tm[2]);
+        if (nn) hits.push({ n: nn, at: tm.index + tm[1].length });
+      }
+      if (hits.length >= 2) {
+        hits.forEach((h) => { if (!marks.some((m2) => m2.at === h.at)) marks.push(h); });
+        marks.sort((a2, b2) => a2.at - b2.at);
+      }
+    }
+    const before = cand.length;
+    for (let j = 0; j < marks.length; j++) {
+      const from = marks[j].at + 1;
+      const to = j + 1 < marks.length ? marks[j + 1].at : l.length;
+      let t = clean(l.slice(from, to));
+      // 「【① · 地狱】」这种：编号前的左括号说明后面那个右括号是配对用的，
+      // 连同编号后多余的分隔号一起去掉，否则标签会变成「· 地狱】 灾劫缠身」
+      if (/[【\[（(]$/.test(l.slice(0, marks[j].at))) {
+        t = clean(t.replace(/^[·•‧・、,，:：\-]+/, '').replace(/[】\]）)]/, ' '));
+      }
+      t = clean(t.replace(/^[·•‧・、,，:：]+/, ''));
+      const pre = j === 0 ? clean(l.slice(0, marks[j].at)) : '';
+      // 行首的圈码可信（「① 走」）；夹在句子中间的必须有实质内容 ——
+      // 否则「请回一个数字（①/②/③/④）」会被误当成 4 个选项，标签还变成「/」
+      const bare = l.slice(0, marks[j].at).replace(/^[\s>*-]+/, '').trim() === '';
+      const meaningful = t.replace(/[^\u4e00-\u9fa5A-Za-z0-9]/g, '').length;
+      if (t && meaningful >= (bare ? 1 : 2) && !/^选\s*项/.test(t)) {
+        cand.push({ n: marks[j].n, t, i, c: true, k: 'circ', pre });
+      }
+    }
+    if (cand.length > before) { plainSeq = 0; return; }
+
+    // ①' 「emoji + **加粗标题** —— 说明」式（完全没有编号）。
+    // 门槛和「纯短行」一样严：>=3 条连续 + 必须有强信号。
+    const bt = l.match(/^(?:[\u{1F000}-\u{1FAFF}\u2600-\u27BF\u2B00-\u2BFF]\uFE0F?\s*)?\*\*([^*\n]{1,24})\*\*\s*(?:——|—|:|：|-)\s*(\S.*)$/u);
+    if (bt) {
+    boldSeq++;
+    cand.push({ n: boldSeq, t: clean(bt[1]) + ' —— ' + clean(bt[2]).slice(0, 40), i, c: false, k: 'boldtitle', pre: '' });
+    plainSeq = 0;
+    return;
+    }
+    boldSeq = 0;
+    
+    
+
+    // ③ 完全无标记的短行
+    const pl = l.trim();
+    if (isPlainLine(pl)) { plainSeq++; cand.push({ n: plainSeq, t: pl, i, c: false, k: 'plain', pre: '' }); return; }
+    plainSeq = 0;
+  });
+
+  // 「纯短行」只在【≥3 行连续】（行号相邻 + 序号递增）时才算一组选项。
+  // 否则它们只是正文说明（比如标题下面的那句解释），必须剔除 ——
+  // 不然它们会以 n=1 的身份混进候选，把真正的编号串挤断。
+  const plainKeep = new Set();
+  {
+    let g = [];
+    const flush = () => { if (g.length >= 3) g.forEach((c) => plainKeep.add(c)); g = []; };
+    for (const c of cand) {
+      if (c.k === 'plain' || c.k === 'boldtitle') {
+        const last = g[g.length - 1];
+        // 允许中间有空行（选项之间常空行），但仍要求靠近；plain 与 boldtitle 不混组
+        if (last && (c.i - last.i > 3 || c.n !== last.n + 1 || c.k !== last.k)) flush();
+        g.push(c);
+      } else if (g.length && c.i > g[g.length - 1].i + 1) {
+        flush();
+      }
+    }
+    flush();
+  }
+  // 紧跟在「编号选项」后面的项目符号行，几乎都是那个选项的说明
+  // （例：`【1·王者天命】` 后面跟着 `- 初始气运 90 ｜ …`）。
+  // 它们会以 n=1 的身份把编号串打断，必须剔除。
+  const bulletDrop = new Set();
+  {
+    let lastNum = -99;      // 最近一个编号选项所在行
+    let lastDropped = -99;  // 最近一个被剔除的说明行
+    for (const c of cand) {
+      if (c.k === 'bullet') {
+        // 距编号选项 4 行内，或紧接在上一条说明行之后 → 都是说明
+        if (c.i - lastNum <= 4 || c.i === lastDropped + 1) {
+          bulletDrop.add(c);
+          lastDropped = c.i;
+        }
+      } else if (c.k !== 'plain') {
+        lastNum = c.i;
+      }
+    }
+  }
+  // ---- 标出「分组标题」：编号/圈码行后面紧跟 ≥2 条 `·` 子项 ----
+  // 玩家实测：
+  //   ① 前世身份          ← 字段名，不是选项
+  //     · 书生
+  //     · 武将
+  //   ② 前世死因
+  //     · 含冤
+  // 这些标题序号连续，会被误当成一串选项。
+  const groupHeader = new Set();
+  for (const c of cand) {
+    if (c.k !== 'num') continue;
+    let bullets = 0, z = c.i + 1;
+    while (z < Math.min(bodyEnd, lines.length)) {
+      const s2 = lines[z].trim();
+      if (!s2) { z++; continue; }
+      if (/^[·•‧・‣▪]\s*\S/.test(s2)) { bullets++; z++; continue; }
+      break;
+    }
+    if (bullets >= 2) groupHeader.add(c);
+  }
+
+  const seq = cand.filter((c) =>
+    !groupHeader.has(c) &&
+    !bulletDrop.has(c) && ((c.k !== 'plain' && c.k !== 'boldtitle') || plainKeep.has(c)));
+
+  // ---- 找「从 1 开始、序号连续递增」的串 ----
+  const runs = [];
+  for (let a = 0; a < seq.length; a++) {
+    if (seq[a].n !== 1) continue;
+    const run = [seq[a]];
+    let lastIdx = a;
+    for (let b = a + 1; b < seq.length; b++) {
+      const prev = run[run.length - 1];
+      // 中间只要出现过【同类型的另一个 1】，就说明那是另一段列表的开头，
+      // 绝不许跨过去继续接序号 —— 否则会出现这种三不像：
+      //   状态栏「未命名/气运/未定」(1,2,3) + 真选项的「地狱/作弊模式」(4,5)
+      let crossedNewList = false;
+      for (let q = lastIdx + 1; q < b; q++) {
+        if (seq[q].n === 1 && seq[q].k === seq[b].k) { crossedNewList = true; break; }
+      }
+      // 间距上限 12 行：选项后面常跟 2-3 行描述，5 行太紧会组不成串。
+      // 防误判靠的是「序号必须严格递增」—— 两段无关列表都从 1 开始，天然断开。
+      if (!crossedNewList && seq[b].n === prev.n + 1 && seq[b].i - prev.i <= 12 && seq[b].t) {
+        run.push(seq[b]);
+        lastIdx = b;
+      }
+      // 同类型的另一个 1 → 这段列表到此为止
+      else if (seq[b].n === 1 && seq[b].k === run[0].k) break;
+    }
+    if (run.length >= 2) runs.push(run);
+  }
+  if (!runs.length) return null;
+
+  // ---- 给每个串打分 ----
+  const evaluate = (run) => {
+    const lo = run[0].i, hi = run[run.length - 1].i;
+    const before = lines.slice(Math.max(0, lo - 6), lo).map(clean).join(' ');
+    // 窗口开到正文结束（附录已被排除在外）—— 以前只开 hi+9 行，
+    // 「自由行动」写在长描述之后时会被漏掉，导致整串选项被丢
+    const win = lines.slice(Math.max(0, lo - 5), Math.min(bodyEnd, hi + 40)).map(clean);
+    const headRe = /选\s*项|选择|可选|请选择|行动选项|择其一|请确认|请回复|请回答|请从中|二选一|以下选项|以下选择|做出选择|确认一下|择定|择一|选定|抉择|挑选|自选|请择|任选|指定/;
+    // 选项【后面】也看，但用更严的词 —— 很多规则书把「请选择你的难度」写在末尾；
+    // 若用宽松词，会被选项名里的「选择」二字误触发
+    // （例：流程图「① 难度选择 → ② 模式选择」不是选项，却含「选择」）
+    const tailRe = /请选择|可选择|选\s*项|行动选项|择其一|请确认|请回复|请回答|二选一|回复[^\n]{0,8}(?:编号|序号|数字)|输入[^\n]{0,8}(?:编号|序号)/;
+    // 结构性信号：看选项前面最后一行
+    //   · 以 ？/? 结尾              → 在问玩家，算信号
+    //   · 以 ：/: 结尾 且含选择动词  → 也算（「请先择定此世命格：」）
+    //     注意：光有冒号不算 —— 「开局流程：」那种只是标题，不是让玩家选
+    let prevLine = '';
+    for (let z = lo - 1; z >= 0; z--) { const s2 = lines[z].trim(); if (s2) { prevLine = s2; break; } }
+    const leadRe = /(?:选择|择定|择一|选定|选一|确定|确认|回复|回答|决定|抉择|取舍|挑选|自选|请择|任选)/;
+    const leadSignal = /[?？]\s*$/.test(prevLine) ||
+                       (/[:：]\s*$/.test(prevLine) && leadRe.test(prevLine));
+    const hasHead = headRe.test(before) || headRe.test(run[0].pre || '') ||
+                    tailRe.test(win.join(' ')) || leadSignal;
+    const hasFree = run.some((r) => /自定义|自由行动|不选|其他/.test(r.t)) ||
+                    win.some((l) => /自由行动|自定义行动/.test(l));
+    const pos = hi / denom;
+    let s = 0;
+    if (hasHead) s += 6;
+    if (hasFree) s += 5;
+    s += pos > 0.6 ? 3 : pos > 0.4 ? 1 : 0;
+    if (run.length >= 3 && run.length <= 6) s += 2;
+    if (run.length === 2) s += 1;        // 「A. 接受 / B. 拒绝」这种两项选项也常见
+    // 长列表（如「十二金仙」12 项）也是正常选项，只能轻微降权；
+    // 超过 24 项才怀疑是规则书章节清单
+    if (run.length > 6 && run.length <= 24) s += 1;
+    if (run.length > 24) s -= 2;
+    return { s, hasHead, hasFree, allCirc: run.every((r) => r.c), win };
+  };
+
+  // 编号串和「无标记串」同时存在时，编号串几乎一定才是真选项
+    // （玩家实测：面板区块的 · 行被当成了选项）。
+  const hasNumbered = runs.some((r) => r.some((c) => c.k === 'num') && r.length >= 2);
+  const scored = runs.map((run) => {
+    const m = evaluate(run);
+    if (run.every((c) => c.k !== 'num') && hasNumbered) m.s -= 4;
+    return { run, m };
+  });
+  scored.sort((a, b) => (b.m.s - a.m.s) || (b.run.length - a.run.length));
+  const best = scored[0];
+  const strong = best.m.hasHead || best.m.hasFree;
+  // 整串是否都是圈码（圈码在别的规则书里常是子条目，门槛要高些）
+  const allCirc = best.run.every((r) => r.k === 'circ');
+  // 有没有「无编号」的候选（项目符号 / 纯短行）——它们没有编号锚点，最容易误判
+  const unmarked = best.run.some((r) => r.k === 'bullet' || r.k === 'plain' || r.k === 'boldtitle');
+  const hasPlain = best.run.some((r) => r.k === 'plain' || r.k === 'boldtitle');
+
+  if (allCirc && !strong) return null;           // 圈码：必须有强信号
+  if (unmarked && !strong) return null;          // 无编号：必须有强信号（防把面板列表当选项）
+  if (hasPlain && best.run.length < 3) return null;   // 纯短行：至少要 3 行才像选项
+  if (!allCirc && !unmarked && best.m.s < 4) return null;   // 有编号的：及格即可
+
+  // 输出上限 12：十二金仙、七大流派这种长列表都要能完整显示；再多也显示不下
+  const out = best.run.slice(0, 12).map((r) => ({ n: r.n, label: r.t.slice(0, 100), send: String(r.n) }));
+  if (best.m.win.some((l) => /自由行动|自定义行动/.test(l))) out.push({ free: true, label: '🎭 自由行动（自己打字）' });
+  if (best.m.win.some((l) => /系统沟通|与系统/.test(l))) out.push({ sys: true, label: '🖥️ 系统沟通', send: '系统' });
+  return out;
+}
+function makeOptButton(o, primary) {
+  const b = document.createElement('button');
+  if (!primary) b.className = '';
+  if (o.free) { b.className = 'free'; b.textContent = o.label; b.onclick = () => { $('#input').focus(); toast('自由行动：直接在输入框写'); }; }
+  else if (o.sys) { b.className = 'sys'; b.textContent = o.label; b.onclick = () => { if (!busy) send(o.send); }; }
+  else {
+    b.className = primary ? 'main' : '';
+    b.innerHTML = '<span class="k">' + o.n + '</span>' + esc(o.label);
+    b.onclick = () => { if (!busy) send(o.send); };
+  }
+  return b;
+}
+/** 把选项渲染成「大按钮」到容器里；超过 3 个自动折叠 */
+function appendOptions(container, raw) {
+  if (!container) return;
+  if (!cfg.optionButtons || !raw) return;
+  const opts = parseOptions(raw);
+  // AI 在等玩家给角色起名时只会回一句「请为你的角色赐名。」——
+  // 这一步本来就该玩家自己打字，但界面上什么都不显示，看着像坏了。
+  // 实测 58 本书里，这类「0 选项」占了 0 选项回合的绝大多数。
+  // ---- 多选题组填表：A./B./C./D. 各给一组候选，让你一次回复几个编号 ----
+  // 这种给「选一个」的按钮是误导（点「凡人」只发一个 1，凑不齐四项）。
+  if (isFormStep(raw)) {
+    const hint = document.createElement('div');
+    hint.className = 'opts';
+    hint.innerHTML = '<div class="otitle">✍️ <b>这一步要你一次回复几个编号</b> —— AI 在等你填表</div>' +
+      '<div class="hint" style="padding:5px 2px 0;line-height:1.7">' +
+      '上面每个字段各选一个，把编号拼起来一起发，例如「<b>A1 B5 C3 D2</b>」。<br/>' +
+      '<span style="opacity:.7">也可以直接用自己的话描述，或说「全部随机」。</span></div>';
+    container.appendChild(hint);
+    return;
+  }
+
+  if (!opts || !opts.length) {
+    // 填表步骤：AI 让你「一行四项」这种格式直接打字，本来就没有可点的选项
+    if (/输入格式|一行\s*[两三四五六七八九十\d]+\s*项|按格式|直接说|直接写/.test(raw)) {
+      const hint = document.createElement('div');
+      hint.className = 'opts';
+      hint.innerHTML = '<div class="otitle">✍️ <b>这一步要你按格式打字</b> —— AI 在等你填表</div>' +
+        '<div class="hint" style="padding:5px 2px 0;line-height:1.7">' +
+        '照它上面给的格式写一行发过去就行（例如「书生 ｜ 含冤 ｜ 复仇 ｜ 读书」）。<br/>' +
+        '<span style="opacity:.7">不想选的话也可以直接说「全部随机」。</span></div>';
+      container.appendChild(hint);
+      return;
+    }
+    if (/(?:赐名|起名|取名|命名)/.test(raw) && /请|等待|尚未|为你的角色/.test(raw)) {
+      const hint = document.createElement('div');
+      hint.className = 'opts';
+      hint.innerHTML = '<div class="otitle">✍️ <b>这一步要你自己打字</b> —— AI 在等你的角色名字</div>' +
+        '<div class="hint" style="padding:5px 2px 0;line-height:1.7">' +
+        '在下面的输入框里写下名字发给它就行（比如「林昭」）。<br/>' +
+        '<span style="opacity:.7">规则要求 AI 不能替你取名，所以这里没有选项按钮。</span></div>';
+      container.appendChild(hint);
+    }
+    return;
+  }
+  const box = document.createElement('div');
+  box.className = 'opts';
+  const t = document.createElement('div');
+  t.className = 'otitle'; t.textContent = '点一下即执行　·　输入框依然可以自由输入';
+  box.appendChild(t);
+
+  const main = opts.filter((o) => !o.free && !o.sys);
+  const extra = opts.filter((o) => o.free || o.sys);
+  main.forEach((o, i) => box.appendChild(makeOptButton(o, i === 0)));   // 全部显示，不折叠
+  extra.forEach((o) => box.appendChild(makeOptButton(o, false)));
+  container.appendChild(box);
+}
+function clearOptRows() { const w = $('#optWrap'); if (w) w.innerHTML = ''; }
+
+/* ---------------- 剧情页：场景卡片 ---------------- */
+/* 把 AI 回复拆成「标题 / 正文」：
+   · 「④ 选项 …」整段切掉 —— 选项由下面的按钮区呈现，不该在正文里重复一遍
+   · 抽出来当标题的那一行也从正文里去掉，避免标题显示两遍 */
+function splitScene(raw) {
+  let lines = String(raw || '').split('\n');
+  const isOptHeader = (l) => /^(?:[①②③④⑤⑥⑦⑧⑨⑩]|\d{1,2})?\s*选\s*项\s*(?:0|S)?\s*[:：]?\s*$/
+    .test(l.replace(/\*\*/g, '').replace(/^[>#\-\s]+/, '').trim());
+  const isNumLine = (l) => /^\s*(?:[>*-]\s*)?\*{0,2}\d{1,2}\s*[.、．)）:：]\s*\S/.test(l) ||
+                           /^\s*[①②③④⑤⑥⑦⑧⑨⑩]/.test(l);
+  const isRule = (l) => /^\s*(?:-{3,}|\*{3,}|_{3,})\s*$/.test(l);
+
+  // ① 切掉选项区
+  let cut = -1;
+  for (let i = 0; i < lines.length; i++) { if (isOptHeader(lines[i])) { cut = i; break; } }
+  if (cut < 0) {
+    let i = 0;
+    while (i < lines.length) {
+      if (isNumLine(lines[i])) {
+        let j = i, n = 0;
+        while (j < lines.length && isNumLine(lines[j])) { n++; j++; }
+        if (n >= 3) {
+          cut = i;
+          while (cut > 0 && (isRule(lines[cut - 1]) || !lines[cut - 1].trim())) cut--;
+          break;
+        }
+        i = j;
+      } else i++;
+    }
+  }
+  if (cut >= 0) lines = lines.slice(0, cut);
+
+  // ② 抽标题，并从正文里删掉那一行
+  let title = '', ti = -1;
+  for (let i = 0; i < lines.length; i++) {
+    const m = lines[i].match(/^#{1,4}\s+(.+?)\s*$/);
+    if (m) { title = m[1].replace(/\*\*/g, '').trim(); ti = i; break; }
+  }
+  if (ti < 0) {
+    for (let i = 0; i < lines.length; i++) {
+      const m = lines[i].match(/^\s*\*\*(.{2,40}?)\*\*\s*[:：]?\s*$/);
+      if (m && !/选\s*项|^[④⑤⑥]|难度|模式/.test(m[1])) { title = m[1].trim(); ti = i; break; }
+    }
+  }
+  if (ti >= 0) lines.splice(ti, 1);
+
+  const body = lines.join('\n').replace(/\n{3,}/g, '\n\n').replace(/^\s*\n+/, '').trim();
+  if (!title) {
+    const place = store && store.state && store.state.meta && store.state.meta.place;
+    title = place ? String(place) : '当前场景';
+  }
+  return { title, body };
+}
+function renderRolls() {
+  const rs = (store && Array.isArray(store.rolls)) ? store.rolls : [];
+  if (!rs.length) return '';
+  return '<div class="sc-rolls">' + rs.map((r) => {
+    const ok = r.ok === true, no = r.ok === false;
+    return '<div class="sc-roll">🎲 <b>' + esc(r.what || r.kind || '判定') + '</b>\u3000' +
+      esc(r.expr || '') + ' = ' + esc(String(r.roll)) +
+      (r.dc !== undefined && r.dc !== null ? (ok ? ' ≥ ' : no ? ' < ' : ' / ') + esc(String(r.dc)) : '') +
+      (ok || no ? '\u3000<span class="' + (ok ? 'rok">成功' : 'rno">失败') + '</span>' : '') +
+      (r.note ? '\u3000' + esc(r.note) : '') + '</div>';
+  }).join('') + '</div>';
+}
+function renderStory() {
+  const wrap = $('#sceneWrap');
+  if (!wrap) return;
+
+  // 正在推演：先把「你的行动」和流式内容显示出来（否则玩家对着上一回合的旧卡片干等）
+  if (liveText !== null) {
+    let myTurn = '';
+    for (let i = msgs.length - 1; i >= 0; i--) { if (msgs[i].role === 'user') { myTurn = msgs[i].content; break; } }
+    const shown = GWState.stripForDisplay(liveText);
+    wrap.innerHTML =
+      (myTurn ? '<div class="sc-your">你的行动：<b>' + esc(String(myTurn).slice(0, 80)) + '</b></div>' : '') +
+      '<div class="scene-card">' +
+        '<div class="sc-head"><span class="sc-badge ai">⏳ 主持人正在推演</span></div>' +
+        '<div class="sc-body" id="scLiveBody">' +
+          (shown ? md(shown) : '<span class="hint">正在拟稿……</span>') +
+        '</div>' +
+      '</div>';
+    clearOptRows();
+    return;
+  }
+
+  if (!msgs.length) {
+    wrap.innerHTML = '<div class="scene-card"><div class="sc-head"><span class="sc-badge">准备就绪</span></div>' +
+      '<h2 class="sc-title">《' + esc((curWorld && curWorld.name) || '') + '》</h2>' +
+      '<div class="sc-body">点下面的 <b>开局</b> 开始。' +
+      (cfg.apiKey ? '' : '（还没填 API Key，请先点右上角 ⚙️）') +
+      '<br/><br/>每回合 AI 会在回复末尾附带一段状态数据，程序自动解析后填进上面的标签页。</div></div>';
+    clearOptRows();
+    return;
+  }
+  let ai = null, myAct = '';
+  for (let i = msgs.length - 1; i >= 0; i--) {
+    if (!ai && msgs[i].role === 'assistant') ai = msgs[i];
+    else if (ai && msgs[i].role === 'user') { myAct = msgs[i].content; break; }
+  }
+  if (!ai) { wrap.innerHTML = ''; return; }
+  const sc = splitScene(GWState.stripJson(ai.content));
+  const body = sc.body;
+  const turns = msgs.filter((m) => m.role === 'user').length;
+  wrap.innerHTML =
+    (turns > 1 ? '<div class="sc-your">前情 ' + (turns - 1) + ' 回合</div>' : '') +
+    (myAct ? '<div class="sc-your">你的行动：<b>' + esc(myAct.slice(0, 80)) + '</b></div>' : '') +
+    '<div class="scene-card">' +
+      '<div class="sc-head"><span class="sc-badge">当前场景</span><span class="sc-badge ai">✨ 内容由 AI 生成</span></div>' +
+      '<h2 class="sc-title">' + esc(sc.title) + '</h2>' +
+      '<div class="sc-body">' + md(body) + '</div>' +
+      renderRolls() +
+      '<div class="sc-foot"><button class="tiny" id="scOpenPanels">▣ 打开面板</button></div>' +
+    '</div>';
+  const ob = $('#scOpenPanels');
+  if (ob) ob.onclick = () => switchTab('pv:__overview');
+  // 选项也在这里渲染：这样刷新页面 / 读取存档后，上一回合的选项依然可点
+  clearOptRows();
+  appendOptions($('#optWrap'), ai.content);
+}
+
+/* ---------------- 顶部标签栏 / 整页切换 ---------------- */
+let curTab = 'story';
+let liveText = null;   // 非 null = 正在推演（剧情页据此显示流式内容，而不是让玩家干等）
+let ruleIndex = null;      // 规则书检索索引（智能检索用）
+let lastRetrieval = null;  // 上一回合检索了什么（界面显示用）
+let pendingNeed = '';      // 模型索取过的章节关键词
+
+/* 检索用查询：最近几轮剧情 + 玩家动作 + 当前地点 */
+function buildQuery() {
+  const bits = [];
+  let n = 0;
+  for (let i = msgs.length - 1; i >= 0 && n < 4; i--) {
+    const m = msgs[i];
+    if (m.role === 'user') { bits.push(String(m.content)); n++; }
+    else if (m.role === 'assistant') bits.push(GWState.stripJson(m.content).slice(-1500));
+  }
+  if (store && store.state && store.state.meta) {
+    bits.push(String(store.state.meta.place || ''));
+    bits.push(String(store.state.meta.world || ''));
+  }
+  return bits.join(' ');
+}
+
+function topTabList() {
+  const tabs = [{ id: 'story', name: '剧情', icon: '📖' }];
+  GWPanel.buildTabs(store).forEach((t) => tabs.push({ id: 'pv:' + t.id, name: t.name, icon: t.icon, count: t.count }));
+  return tabs;
+}
+function refreshTopTabs() {
+  const nav = $('#topTabs');
+  if (!nav) return;
+  nav.innerHTML = topTabList().map((t) =>
+    '<button data-tab="' + esc(t.id) + '"' + (t.id === curTab ? ' class="on"' : '') + '>' +
+    (t.icon ? esc(t.icon) + ' ' : '') + esc(t.name) +
+    (t.count ? '<span class="tn">' + t.count + '</span>' : '') + '</button>').join('');
+}
+function switchTab(id) {
+  curTab = id;
+  const pv = id.indexOf('pv:') === 0 ? id.slice(3) : null;
+  $('#pageStory').classList.toggle('on', id === 'story');
+  $('#pageMemo').classList.toggle('on', id === 'memo');
+  $('#pageData').classList.toggle('on', !!pv);
+  $('#viewGame').classList.toggle('panelmode', id !== 'story');
+  if (pv) {
+    // 顶部标签栏已经负责切换了，这里只渲染内容 ——
+    // 否则面板页里会再出现一行一模一样的标签（重复两行）
+    const tabs = GWPanel.buildTabs(store);
+    $('#pageData').innerHTML = '<div class="pv-body">' + GWPanel.bodyOf(tabs, pv) + '</div>';
+  }
+  if (id === 'memo') scrollDown();
+  refreshTopTabs();
+}
+
+/* ============================================================ 骰子 */
+function randInt(n) {
+  const buf = new Uint32Array(1);
+  const limit = Math.floor(4294967296 / n) * n;
+  let v;
+  do { crypto.getRandomValues(buf); v = buf[0]; } while (v >= limit);
+  return (v % n) + 1;
+}
+function rollExpr(expr) {
+  const m = String(expr).replace(/\s+/g, '').match(/^(\d*)d(\d+)(kh(\d+)|kl(\d+))?([+-]\d+)?$/i);
+  if (!m) return null;
+  const n = Math.min(parseInt(m[1] || '1', 10), 100);
+  const faces = Math.min(parseInt(m[2], 10), 1000000);
+  const mode = m[3] ? m[3].toLowerCase() : '';
+  const keep = mode ? Math.min(parseInt(m[4] || m[5], 10), n) : n;
+  const mod = m[6] ? parseInt(m[6], 10) : 0;
+  const rolls = [];
+  for (let i = 0; i < n; i++) rolls.push(randInt(faces));
+  let used = rolls.slice(), dropTxt = '';
+  if (mode === 'kh') { const s = rolls.slice().sort((a, b) => b - a); used = s.slice(0, keep);
+    if (keep < n) dropTxt = ' 取高' + keep + '→[' + used.join(', ') + '] 弃[' + s.slice(keep).join(', ') + ']'; }
+  else if (mode === 'kl') { const s = rolls.slice().sort((a, b) => a - b); used = s.slice(0, keep);
+    if (keep < n) dropTxt = ' 取低' + keep + '→[' + used.join(', ') + '] 弃[' + s.slice(keep).join(', ') + ']'; }
+  const total = used.reduce((a, b) => a + b, 0) + mod;
+  return { total, rolls, n, faces,
+    detail: n + 'd' + faces + ' = [' + rolls.join(', ') + ']' + dropTxt + (mod ? ' ' + (mod > 0 ? '+' : '') + mod : '') + ' → ' + total };
+}
+
+/* ============================================================ 存储（IndexedDB） */
+const DB_NAME = 'gw_mobile', DB_VER = 1, STORE = 'worlds';
+let _db = null;
+function openDB() {
+  if (_db) return Promise.resolve(_db);
+  return new Promise((res, rej) => {
+    if (!('indexedDB' in window)) { rej(new Error('这个浏览器不支持本地存储 IndexedDB')); return; }
+    const r = indexedDB.open(DB_NAME, DB_VER);
+    r.onupgradeneeded = () => {
+      const db = r.result;
+      if (!db.objectStoreNames.contains(STORE)) db.createObjectStore(STORE, { keyPath: 'id' });
+    };
+    r.onsuccess = () => { _db = r.result; res(_db); };
+    r.onerror = () => rej(r.error);
+  });
+}
+function tx(mode, fn) {
+  return openDB().then((db) => new Promise((res, rej) => {
+    const t = db.transaction(STORE, mode);
+    const st = t.objectStore(STORE);
+    let out;
+    const rq = fn(st);
+    if (rq) rq.onsuccess = () => { out = rq.result; };
+    t.oncomplete = () => res(out);
+    t.onerror = () => rej(t.error);
+    t.onabort = () => rej(t.error);
+  }));
+}
+const dbAll = () => tx('readonly', (st) => st.getAll()).then((a) => a || []);
+const dbGet = (id) => tx('readonly', (st) => st.get(id));
+const dbPut = (w) => tx('readwrite', (st) => st.put(w));
+const dbDel = (id) => tx('readwrite', (st) => st.delete(id));
+
+/* ============================================================ 状态 */
+const LS = { cfg: 'gwm_cfg_v1', slots: 'gwm_slots_v1', proto: 'gwm_proto_v1', ops: 'gwm_ops_v1',
+             msgs: 'gwm_msgs_', arch: 'gwm_arch_' };
+const defaultCfg = {
+  apiKey: '', baseUrl: 'https://api.deepseek.com', model: 'deepseek-chat', temperature: 1.0,
+  optionButtons: true, useProtocol: true, useNotes: true,
+  noThink: true,     // 关闭思考链：实测生成阶段快约 45%
+  ruleMode: 'auto',  // 规则书发送方式：auto=智能检索 / full=全文 / limit=截断
+  bookLimit: 0,      // ruleMode=limit 时的上限字符数
+  ruleBudget: 60000, // 智能检索每回合最多发多少字原文
+  needExtra: true,   // 允许模型用 need_rule 主动索取章节
+};
+let cfg = Object.assign({}, defaultCfg, JSON.parse(localStorage.getItem(LS.cfg) || '{}'));
+let worlds = [];
+let protocolText = '';
+let curWorld = null;
+let msgs = [];
+let systemPrompt = '';
+let archive = {};
+let busy = false, aborter = null;
+const saveCfg = () => localStorage.setItem(LS.cfg, JSON.stringify(cfg));
+const msgsKey = () => LS.msgs + (curWorld ? curWorld.id : 'none');
+const archKey = () => LS.arch + (curWorld ? curWorld.id : 'none');
+function saveMsgs() { try { localStorage.setItem(msgsKey(), JSON.stringify(msgs.slice(-200))); } catch (e) { /* 配额 */ } }
+function saveArch() { try { localStorage.setItem(archKey(), JSON.stringify(archive)); } catch (e) { /* 配额 */ } }
+
+/* ============================================================ 结构化状态（state.js） */
+let store = GWState.createStore();
+let lastState = { ok: true, errors: [], via: '' };
+const storeKey = () => 'gwm_state_v1_' + (curWorld ? curWorld.id : 'none');
+function loadStore() {
+  try { store = JSON.parse(localStorage.getItem(storeKey())) || GWState.createStore(); }
+  catch (e) { store = GWState.createStore(); }
+  lastState = { ok: true, errors: [], via: '' };
+}
+function saveStore() {
+  try { localStorage.setItem(storeKey(), JSON.stringify(store)); } catch (e) { /* 配额 */ }
+}
+function resetStore() { store = GWState.createStore(); saveStore(); }
+function stateBadge() {
+  let s = GWPanel.summary(store);
+  if (!s) return '';
+  if (lastState.errors && lastState.errors.length) s += ' · ⚠️ ' + String(lastState.errors[0]).slice(0, 36);
+  return s;
+}
+
+/* ---------------- 状态面板（render.js） ---------------- */
+let pvActive = '__overview';
+function renderPanelDrawer() {
+  const tabs = GWPanel.buildTabs(store);
+  if (!tabs.length) return;
+  if (!tabs.some((t) => t.id === pvActive)) pvActive = tabs[0].id;
+  $('#pvTabs').innerHTML = GWPanel.tabBar(tabs, pvActive);
+  $('#pvBody').innerHTML = GWPanel.bodyOf(tabs, pvActive);
+  const hint = $('#pvHint');
+  if (hint) hint.textContent = GWPanel.summary(store) || '还没有状态数据（开局后自动生成）';
+}
+function refreshPanels() {
+  const d = $('#dPanels');
+  if (d && d.classList.contains('on')) renderPanelDrawer();
+}
+
+/* ============================================================ 视图 */
+function showLib() { $('#viewLib').classList.add('on'); $('#viewGame').classList.remove('on'); loadWorlds(); }
+function showGame() { $('#viewLib').classList.remove('on'); $('#viewGame').classList.add('on'); }
+function closeAll() { $$('.drawer').forEach((d) => d.classList.remove('on')); }
+function openDrawer(sel) { closeAll(); $(sel).classList.add('on'); }
+
+/* ============================================================ 世界列表 */
+const ago = (ts) => {
+  const s = (Date.now() - ts) / 1000;
+  if (s < 60) return '刚刚';
+  if (s < 3600) return Math.floor(s / 60) + ' 分钟前';
+  if (s < 86400) return Math.floor(s / 3600) + ' 小时前';
+  if (s < 86400 * 30) return Math.floor(s / 86400) + ' 天前';
+  return new Date(ts).toLocaleDateString('zh-CN');
+};
+const wan = (n) => (n / 10000).toFixed(1).replace(/\.0$/, '') + ' 万字';
+
+function coverStyle(w) {
+  if (w.cover) return 'background-image:url(' + w.cover + ')';
+  let h = 0;
+  for (let i = 0; i < w.name.length; i++) h = (h * 31 + w.name.charCodeAt(i)) % 360;
+  return 'background:linear-gradient(160deg,hsl(' + h + ',45%,20%),hsl(' + ((h + 50) % 360) + ',40%,10%) 55%,#0a0c12)';
+}
+
+async function loadWorlds() {
+  try {
+    worlds = (await dbAll()).sort((a, b) => b.mtime - a.mtime);
+  } catch (e) {
+    worlds = [];
+    toast('本地存储打不开：' + e.message);
+  }
+  renderWorlds();
+}
+/* 这本书最近一局用到了哪些面板 —— 直接读它自己的存档。
+   null = 没玩过；[] = 玩过但还没建面板 */
+function panelsOf(w) {
+  try {
+    const raw = localStorage.getItem('gwm_state_v1_' + w.id);
+    if (!raw) return null;
+    const s = JSON.parse(raw);
+    if (!s || !Array.isArray(s.panels)) return null;
+    const colls = (s.state && s.state.collections) || {};
+    return s.panels.map((p) => ({
+      icon: p.icon || '',
+      name: p.name || p.id,
+      n: Array.isArray(colls[p.id]) ? colls[p.id].length : 0,
+    }));
+  } catch (e) { return null; }
+}
+function panelChips(w) {
+  const ps = panelsOf(w);
+  if (ps === null) return '<span class="wchip none">还没开始</span>';
+  if (!ps.length) return '<span class="wchip none">这一局还没建面板</span>';
+  const show = ps.slice(0, 8);
+  return show.map((p) => '<span class="wchip' + (p.n ? '' : ' off') + '">' +
+      (p.icon ? esc(p.icon) + ' ' : '') + esc(p.name) + (p.n ? ' <b>' + p.n + '</b>' : '') +
+    '</span>').join('') +
+    (ps.length > show.length ? '<span class="wchip none">+' + (ps.length - show.length) + '</span>' : '');
+}
+
+function renderWorlds() {
+  const grid = $('#worldGrid');
+  $('#emptyState').hidden = worlds.length > 0;
+  grid.innerHTML = worlds.map((w) =>
+    '<div class="wcard">' +
+      '<div class="cover" style="' + coverStyle(w) + '" data-play="' + w.id + '">' +
+        (w.cover ? '' : '<div class="ph">✦</div>') +
+        '<div class="badge">' + wan(w.chars) + '</div>' +
+      '</div>' +
+      '<div class="wb">' +
+        '<div class="wn">' + esc(w.name) + '</div>' +
+        '<div class="wd">' + esc(w.description || '') + '</div>' +
+        '<div class="wp">' + panelChips(w) + '</div>' +
+        '<div class="wa">' +
+          '<button class="primary" data-play="' + w.id + '">▶ 开始</button>' +
+          '<button class="mini" data-more="' + w.id + '">⋯</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>').join('');
+}
+
+async function refreshQuota() {
+  try {
+    if (navigator.storage && navigator.storage.estimate) {
+      const e = await navigator.storage.estimate();
+      $('#quotaHint').innerHTML = '已用 <b style="color:var(--gold)">' + (e.usage / 1048576).toFixed(1) +
+        ' MB</b>' + (e.quota ? ' / 可用约 ' + (e.quota / 1048576).toFixed(0) + ' MB' : '') +
+        '　·　共 ' + worlds.length + ' 个世界';
+      return;
+    }
+  } catch (e) { /* ignore */ }
+  $('#quotaHint').textContent = '共 ' + worlds.length + ' 个世界';
+}
+
+/* ============================================================ 创建 / 编辑世界 */
+let wMode = 'create', wId = null, wRuleFile = null, wCoverFile = null;
+
+function openWorld(id) {
+  wMode = id ? 'edit' : 'create';
+  wId = id || null;
+  wRuleFile = null; wCoverFile = null;
+  const w = id ? worlds.find((x) => x.id === id) : null;
+
+  $('#wTitle').textContent = w ? '世界设置' : '创建世界';
+  $('#wSave').textContent = w ? '保存修改' : '创建世界';
+  $('#wName').value = w ? w.name : '';
+  $('#wDesc').value = w ? (w.description || '') : '';
+  $('#wHint').textContent = '';
+
+  const prev = $('#coverPrev');
+  if (w && w.cover) { prev.style.backgroundImage = 'url(' + w.cover + ')'; prev.innerHTML = ''; }
+  else { prev.style.backgroundImage = ''; prev.innerHTML = '点击<br/>选择'; }
+
+  const drop = $('#cdrop');
+  drop.classList.toggle('has', !!w);
+  drop.querySelector('.big').textContent = w ? '规则书已就位' : '把规则书拖到这里';
+  drop.querySelector('.small').innerHTML = w
+    ? wan(w.chars) + '　·　' + ago(w.mtime) + '　·　换一本请拖新的进来'
+    : '支持 <b>.docx</b> / <b>.txt</b> / <b>.md</b>　·　解析全部在这台设备上完成';
+  ['#wPreview', '#wExport', '#wDelete'].forEach((s) => { $(s).hidden = !w; });
+  openDrawer('#dWorld');
+}
+
+function pickRule(f) {
+  if (!f) return;
+  wRuleFile = f;
+  const drop = $('#cdrop');
+  drop.classList.add('has');
+  drop.querySelector('.big').textContent = '已选择：' + f.name;
+  drop.querySelector('.small').innerHTML = (f.size / 1024).toFixed(0) + ' KB　·　点「' + (wMode === 'edit' ? '保存修改' : '创建世界') + '开始解析';
+  if (!$('#wName').value.trim()) $('#wName').value = f.name.replace(/\.[^.]+$/, '');
+}
+
+function readAsDataURL(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result);
+    r.onerror = () => rej(r.error);
+    r.readAsDataURL(file);
+  });
+}
+/* 封面压到 3:4、最长边 600，避免占太多存储 */
+function shrinkCover(dataUrl) {
+  return new Promise((res) => {
+    const img = new Image();
+    img.onload = () => {
+      const W = 600, H = 800;
+      const c = document.createElement('canvas');
+      c.width = W; c.height = H;
+      const ctx = c.getContext('2d');
+      const scale = Math.max(W / img.width, H / img.height);
+      const dw = img.width * scale, dh = img.height * scale;
+      ctx.drawImage(img, (W - dw) / 2, (H - dh) / 2, dw, dh);
+      try { res(c.toDataURL('image/jpeg', 0.82)); } catch (e) { res(dataUrl); }
+    };
+    img.onerror = () => res(dataUrl);
+    img.src = dataUrl;
+  });
+}
+
+async function saveWorld() {
+  const name = $('#wName').value.trim();
+  const desc = $('#wDesc').value.trim();
+  if (!name) { toast('给这个世界起个名字'); return; }
+
+  let text = null;
+  if (wMode === 'create') {
+    if (!wRuleFile) { toast('先选一本规则书'); return; }
+    $('#wHint').textContent = '⏳ 正在本机解析规则书…';
+    try {
+      const buf = await wRuleFile.arrayBuffer();
+      const r = await extractDocxBuffer(buf, wRuleFile.name);
+      if (!r.ok) { $('#wHint').textContent = '❌ ' + r.error; return; }
+      text = r.text;
+    } catch (e) { $('#wHint').textContent = '❌ ' + e.message; return; }
+    if (!text || text.trim().length < 200) {
+      $('#wHint').textContent = '❌ 解析出的正文太短（' + (text ? text.trim().length : 0) + ' 字符），可能不是规则书';
+      return;
+    }
+  }
+
+  let cover = null;
+  if (wCoverFile) {
+    $('#wHint').textContent = '⏳ 正在处理封面…';
+    cover = await shrinkCover(await readAsDataURL(wCoverFile));
+  }
+
+  if (wMode === 'create') {
+    const w = {
+      id: 'w' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      name, description: desc, text, chars: text.length,
+      mtime: Date.now(), cover: cover || '', notes: '',
+    };
+    await dbPut(w);
+    await loadWorlds(); closeAll();
+    toast('世界「' + name + '」创建好了');
+    return;
+  }
+
+  const w = await dbGet(wId);
+  if (!w) { toast('这个世界不见了'); return; }
+  w.name = name; w.description = desc; w.mtime = Date.now();
+  if (cover) w.cover = cover;
+  if (text) { w.text = text; w.chars = text.length; }
+  await dbPut(w);
+  await loadWorlds(); closeAll();
+  toast('已保存');
+}
+
+/* ============================================================ 世界包 / 备份 */
+function download(name, obj) {
+  const blob = new Blob([typeof obj === 'string' ? obj : JSON.stringify(obj)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  return blob.size;
+}
+function fillPackSel() {
+  $('#packSel').innerHTML = worlds.length
+    ? worlds.map((w) => '<option value="' + w.id + '">' + esc(w.name) + '</option>').join('')
+    : '<option value="">（还没有世界）</option>';
+}
+async function exportWorld(id) {
+  const wid = id || $('#packSel').value;
+  if (!wid) { toast('先选一个世界'); return; }
+  const w = await dbGet(wid);
+  if (!w) { toast('找不到这个世界'); return; }
+  const size = download(w.name.replace(/[\\/:*?"<>|]/g, '_') + '.世界包.json', {
+    format: 'gw-world-v1',
+    world: { name: w.name, description: w.description || '', text: w.text, cover: w.cover || null, stats: { source: 'mobile' }, notes: w.notes || '' },
+  });
+  toast('已导出（' + Math.round(size / 1024) + ' KB）');
+}
+function pickFile(accept, cb) {
+  const f = document.createElement('input');
+  f.type = 'file'; f.accept = accept;
+  f.onchange = () => { const file = f.files[0]; if (file) cb(file); };
+  f.click();
+}
+function importPack() {
+  pickFile('.json', async (file) => {
+    toast('正在导入世界包…');
+    try {
+      const j = JSON.parse(await file.text());
+      const w = j && j.world ? j.world : j;
+      if (!w || typeof w.text !== 'string' || w.text.trim().length < 200) { toast('❌ 这不是有效的世界包'); return; }
+      await dbPut({
+        id: 'w' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+        name: String(w.name || '导入的世界'), description: String(w.description || ''),
+        text: w.text, chars: w.text.length, mtime: Date.now(),
+        cover: typeof w.cover === 'string' ? w.cover : '', notes: String(w.notes || ''),
+      });
+      await loadWorlds(); closeAll();
+      toast('已导入「' + (w.name || '世界') + '」');
+    } catch (e) { toast('❌ ' + e.message); }
+  });
+}
+async function backupExport() {
+  const all = await dbAll();
+  const size = download('文字游戏工坊_整机备份_' + new Date().toISOString().slice(0, 10) + '.json', {
+    format: 'gw-backup-v1', ts: Date.now(), worlds: all,
+    slots: JSON.parse(localStorage.getItem(LS.slots) || '[]'),
+    protocol: localStorage.getItem(LS.proto) || '',
+    cfg: Object.assign({}, cfg, { apiKey: '' }),
+  });
+  toast('已导出（' + (size / 1048576).toFixed(1) + ' MB）');
+}
+function backupImport() {
+  pickFile('.json', async (file) => {
+    if (!confirm('从备份恢复会与当前数据合并（同名世界会新增一份），继续？')) return;
+    toast('正在恢复…');
+    try {
+      const j = JSON.parse(await file.text());
+      let n = 0;
+      for (const w of (j.worlds || [])) { await dbPut(w); n++; }
+      if (j.slots) localStorage.setItem(LS.slots, JSON.stringify(j.slots));
+      if (j.protocol) { localStorage.setItem(LS.proto, j.protocol); protocolText = j.protocol; }
+      await loadWorlds(); closeAll();
+      toast('已恢复 ' + n + ' 个世界');
+    } catch (e) { toast('❌ ' + e.message); }
+  });
+}
+
+/* ============================================================ 开局 */
+function composeSystem() {
+  const parts = [];
+  if (cfg.useProtocol && protocolText) parts.push('══════════ 通用主持协议（怎么主持） ══════════\n\n' + protocolText);
+  const nt = (curWorld.notes || '').trim();
+  if (cfg.useNotes && nt) parts.push('══════════ 本书补充设定 / 裁定（最高优先级，与规则书冲突时以此为准） ══════════\n\n' + nt);
+  const bookText = curWorld.text || '';
+  if (cfg.ruleMode === 'auto' && ruleIndex && ruleIndex.sections.length) {
+    // 智能检索：只发「全书目录 + 最相关的几节原文」。
+    // 发的是原文不是摘要 —— 摘要会让模型把抄错的内容当真理，原文则是「少了几页书」，它会保守处理。
+    const r = GWRetrieve.pick(ruleIndex, buildQuery(), { budget: Number(cfg.ruleBudget) || 60000 });
+    const needIds = (cfg.needExtra !== false && pendingNeed) ? GWRetrieve.search(ruleIndex, pendingNeed, 2) : [];
+    lastRetrieval = GWRetrieve.compose(ruleIndex, { picked: r.picked, need: needIds });
+    parts.push('══════════ 规则书：《' + curWorld.name + '》（智能检索） ══════════\n\n' +
+      '全书共 ' + lastRetrieval.totalSections + ' 节（约 ' + Math.round(lastRetrieval.totalChars / 10000) + ' 万字）。\n' +
+      '下面先给【全书目录】——标 ★已附 的章节，其原文在最后。\n' +
+      '**如果你发现剧情需要用到目录里没有 ★ 的章节，请在回复末尾的状态 json 块里加上 "need_rule":"关键词"，' +
+      '程序会在下一回合把相关章节原文补给你。**\n\n' +
+      '【全书目录】\n' + lastRetrieval.toc + '\n\n' +
+      '【本次附上的章节原文】\n\n' + lastRetrieval.body);
+  } else {
+    const lim = Number(cfg.bookLimit) || 0;
+    const bk = (lim > 0 && bookText.length > lim) ? bookText.slice(0, lim) : bookText;
+    lastRetrieval = null;
+    parts.push('══════════ 规则书原文：《' + curWorld.name + '》 ══════════\n\n' + bk +
+      (bk.length < bookText.length
+        ? '\n\n【注意】规则书较长，以上仅为前 ' + bk.length.toLocaleString() + ' 字符（共 ' +
+          bookText.length.toLocaleString() + '）。若后续剧情涉及未读到的章节，请按通用逻辑合理裁定。'
+        : ''));
+  }
+  parts.push([
+    '',
+    '══════════ 运行指令 ══════════',
+    '以上是你运行本游戏的全部依据：先看《通用主持协议》了解怎么主持，再以规则书原文为具体设定。',
+    '两者冲突时以规则书原文为准；《本书补充设定》若有内容，其优先级最高。',
+    '══════════ 格式硬性要求（每次回复的最后再确认一遍）══════════',
+    '**1. 正文之后必须给 4–6 个【带编号】的选项，每行一项。** 照这个排版写：',
+    '   1. 选项内容 —— 风险／收益',
+    '   2. 选项内容 —— 风险／收益',
+    '   3. 选项内容 —— 风险／收益',
+    '   ❌ **禁止**把选项写成没有编号的段落（玩家点不了，算不合格）。',
+    '   ❌ **禁止**把多项挤在同一行、跳号、重复编号。',
+    '**2. 选档位类**（出身／难度／职业／流派／势力／开局节点）**要把规则书里的档位全部列出**（常见 5–8 个），不要只挑 3–4 个。',
+    '**3. 选项之后给「选项 0」**：🎭 自由行动（规则书有系统／面板设定时再加「选项 S」）。',
+    '**4. 回复的最后一个字符必须是 json 状态块**的反引号。',
+    '**5. 即使本回合只是让玩家做选择（还没进入剧情），也必须给状态块。**',
+    '**6. 开局那一步（op:"init"）的状态块里【必须有 panels】，否则玩家永远看不到面板** ——',
+    '   面板只在 init 里认，之后各回合不再接受（除非本局还没有面板）。照这个写：',
+    '   {"gw":1,"op":"init","turn":0,"panels":[',
+    '     {"id":"bag","name":"背包","icon":"🎒","layout":"list","primary":"name",',
+    '      "fields":[{"key":"name","label":"名称","type":"text"},{"key":"qty","label":"数量","type":"number","unit":"个"}]},',
+    '     {"id":"npc","name":"人物","icon":"👤","layout":"list","primary":"name",',
+    '      "fields":[{"key":"name","label":"姓名","type":"text"},{"key":"rel","label":"关系","type":"text"}]}',
+    '   ],"state":{}}',
+    '   面板 4–8 个：角色／背包／人物关系／任务／技能／功法／势力…（id 用英文，name 用中文）',
+    '   · **每张声明的面板都必须在 state.collections.<面板id> 里写数据**，否则那张面板永远空着。',
+    '   · **「角色／属性／资源」不用声明成面板** —— 总览页会自动显示（player／stats／resources），再声明一张只会空着。',
+    '',
+    '现在立刻执行「开局流程」第 1 步：若规则书自带启动流程则按规则书走；否则输出 150 字以内氛围导语 ＋ 难度/出身档次。',
+    '然后停下等玩家选择。**不要复述规则、不要问玩家准备好了吗。**',
+    '**7. 只有第一回合用 op:"init"。之后每一回合一律用 op:"patch"** ——',
+    '   重复发 init 虽不会覆盖你的面板，但会白白浪费 token，也不符合格式。',
+    '**8. 禁止输出 LaTeX**（「\\textcolor{}{}」「\\colorbox{}{}」「\\textbf{}」「\\qquad」「\\(...\\)」这类都不行）',
+    '   —— 网页渲染不了，玩家会直接看到一堆源码。面板和正文一律用 **Unicode 纯文本**：',
+    '   颜色用 emoji，分隔用「｜」，横线用「─────」，强调用「**加粗**」。',
+  ].join('\n'));
+  return parts.join('\n\n');
+}
+const estTokens = (s) => Math.round(String(s).length * 0.85);
+function updateCtx() {
+  const hist = msgs.reduce((a, m) => a + m.content.length, 0);
+  const n = msgs.filter((m) => m.role === 'user').length;
+  $('#ctxHint').innerHTML =
+    '系统提示词：<b style="color:var(--gold)">' + systemPrompt.length.toLocaleString() + '</b> 字符（约 ' + estTokens(systemPrompt).toLocaleString() + ' token）<br/>' +
+    '对话历史：' + hist.toLocaleString() + ' 字符 ｜ ' + n + ' 个回合<br/>' +
+    '合计约 <b style="color:var(--gold)">' + estTokens(systemPrompt + 'x'.repeat(hist)).toLocaleString() + '</b> token';
+  const badge = stateBadge();
+  $('#status').textContent = msgs.length ? ('已进行 ' + n + ' 回合' + (badge ? '　｜　' + badge : '')) : '';
+  const sh = $('#speedHint');
+  if (sh) {
+    const lim2 = Number(cfg.bookLimit) || 0;
+    const full2 = (curWorld && curWorld.text) ? curWorld.text.length : 0;
+    if (cfg.ruleMode === 'auto') {
+      const n = ruleIndex ? ruleIndex.sections.length : 0;
+      const last = lastRetrieval ? ('本次附上 ' + lastRetrieval.sentIds.length + ' 节 / ' +
+        lastRetrieval.sentChars.toLocaleString() + ' 字') : '';
+      sh.innerHTML = '方式：<b style="color:var(--gold)">智能检索</b>' +
+        (n ? '　已切分 ' + n + ' 节（' + Math.round(full2 / 10000) + ' 万字）' : '（还没建索引）') +
+        (last ? '<br/>' + last : '') +
+        '<br/><span class="hint">每回合只发「全书目录 + 最相关的几节原文」。模型需要别的章节时会在回复里写 ' +
+        'need_rule 索取，下一回合自动补上。<br/>实测：88 万字符全文 ≈ 首字 15.8 秒；智能检索约 3 万字 ≈ 首字 1～2 秒。</span>';
+    } else {
+      const sending2 = (lim2 > 0 && full2 > lim2) ? lim2 : full2;
+      sh.innerHTML = '方式：<b style="color:var(--gold)">' + (lim2 > 0 ? '截断到前 ' + lim2.toLocaleString() + ' 字' : '全文') + '</b>' +
+        '<br/>本局每回合发送约 <b style="color:var(--gold)">' + sending2.toLocaleString() + '</b> 字符' +
+        (lim2 > 0 && full2 > lim2 ? '（全文 ' + full2.toLocaleString() + '）' : '') +
+        '　≈ <b style="color:var(--gold)">' + Math.round(sending2 * 0.85).toLocaleString() + '</b> token。' +
+        '<br/><span class="hint">实测参考：88 万字符 ≈ 首字 15.8 秒；15 万字符 ≈ 首字 4.1 秒。</span>';
+    }
+  }
+  $('#promptHint').innerHTML = curWorld
+    ? '本局将发送：主持协议 ' + (cfg.useProtocol ? '✅' : '❌') + '　补充设定 ' +
+      (cfg.useNotes && (curWorld.notes || '').trim() ? '✅' : '➖') + '　规则书 ' + curWorld.text.length.toLocaleString() + ' 字符'
+    : '—';
+}
+
+async function openWorld2(id) {
+  const w = await dbGet(id);
+  if (!w) { toast('找不到这个世界'); return; }
+  curWorld = w;
+  msgs = JSON.parse(localStorage.getItem(msgsKey()) || '[]');
+  archive = JSON.parse(localStorage.getItem(archKey()) || '{}');
+  loadStore();
+  ruleIndex = null; lastRetrieval = null; pendingNeed = '';
+  if (cfg.ruleMode === 'auto' && typeof GWRetrieve !== 'undefined') {
+    try { ruleIndex = GWRetrieve.build(curWorld.text || ''); } catch (e) { ruleIndex = null; toast('规则书索引建立失败，已回退全文'); }
+  }
+  systemPrompt = composeSystem();
+  $('#gameTitle').textContent = w.name;
+  $('#notes').value = w.notes || '';
+  loadArchToForm(); renderAll(); updateCtx(); refreshQuota();
+  renderStory(); refreshTopTabs(); switchTab('story');
+  showGame();
+  toast('已载入：' + w.name + (msgs.length ? '（有 ' + msgs.length + ' 条历史）' : ''));
+}
+
+/* ============================================================ 对话 */
+const chatEl = () => $('#chat');
+function addBubble(role, text) {
+  const d = document.createElement('div');
+  d.className = 'msg ' + (role === 'user' ? 'user' : role === 'err' ? 'err' : 'ai');
+  const who = document.createElement('div');
+  who.className = 'who';
+  who.textContent = role === 'user' ? '你' : role === 'err' ? '错误' : '主持人';
+  const b = document.createElement('div');
+  b.className = 'body';
+  // AI 回复里的状态 JSON 块不显示给玩家（历史里保留原文，AI 才能看到自己发过的补丁）
+  // 注意：消息的 role 是 'assistant'/'user'，不是 'ai'（'ai' 只是 CSS 类名）
+  b.innerHTML = role === 'user'
+    ? esc(text).replace(/\n/g, '<br/>')
+    : md(role === 'err' ? text : GWState.stripJson(text));
+  d.appendChild(who); d.appendChild(b);
+  chatEl().appendChild(d);
+  return b;
+}
+function scrollDown() { const c = chatEl(); c.scrollTop = c.scrollHeight; }
+function renderAll() {
+  const c = chatEl();
+  c.innerHTML = '';
+  if (!msgs.length) {
+    addBubble('ai', '**《' + (curWorld ? curWorld.name : '') + '》已就绪。**\n\n点 ⚙️ 填好 API Key，然后点下面的 **开局** 开始。\n\n> 规则书在这台设备上，AI 直连 —— 不用开电脑。');
+    return;
+  }
+  for (const m of msgs) addBubble(m.role, m.content);
+  scrollDown();
+}
+
+async function send(text) {
+  if (busy) return;
+  text = (text || '').trim();
+  if (!text) return;
+  if (!cfg.apiKey) { toast('请先在 ⚙️ 里填 API Key'); openDrawer('#dCfg'); return; }
+
+  if (!msgs.length) chatEl().innerHTML = '';
+  clearOptRows();
+  msgs.push({ role: 'user', content: text });
+  addBubble('user', text);
+  saveMsgs(); scrollDown();
+  $('#input').value = '';
+
+  const bubble = addBubble('ai', '');
+  bubble.innerHTML = '<span class="spin"></span> 主持人正在推演……';
+  busy = true; $('#send').disabled = true;
+  aborter = new AbortController();
+  let acc = '';
+  liveText = '';
+  renderStory();          // 立刻切到「⏳ 推演中」，让玩家看到反应
+
+  try {
+    const baseUrl = (cfg.baseUrl || defaultCfg.baseUrl).replace(/\/+$/, '');
+    const mkBody = (withThink) => JSON.stringify(Object.assign({
+      model: cfg.model, temperature: Number(cfg.temperature) || 1.0, stream: true,
+      messages: [{ role: 'system', content: systemPrompt }].concat(msgs),
+    }, (withThink && cfg.noThink) ? { thinking: { type: 'disabled' } } : {}));
+    const postOnce = (withThink) => fetch(baseUrl + '/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + cfg.apiKey },
+      signal: aborter.signal,
+      body: mkBody(withThink),
+    });
+    let res = await postOnce(true);
+    // 有的 API（如 DeepSeek 官方）不认 thinking 参数会直接 400 —— 去掉它重试一次
+    if (res.status === 400 && cfg.noThink) {
+      res = await postOnce(false);
+      if (res.ok) toast('该接口不认 thinking 参数，已自动关掉它');
+    }
+    if (!res.ok) {
+      let msg = 'HTTP ' + res.status;
+      try { const j = await res.json(); msg = (j.error && j.error.message) || msg; } catch (e) { /* ignore */ }
+      if (res.status === 401) msg = 'API Key 无效或已过期';
+      if (res.status === 402) msg = '余额不足';
+      if (res.status === 429) msg = '请求太频繁，稍等再试';
+      if (res.status === 0) msg = '网络被拦截（可能需要在浏览器里允许跨站请求）';
+      throw new Error(msg);
+    }
+
+    const reader = res.body.getReader();
+    const dec = new TextDecoder('utf-8');
+    let buf = '';
+    for (;;) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, { stream: true });
+      const chunks = buf.split('\n');
+      buf = chunks.pop();
+      for (const line of chunks) {
+        const t = line.trim();
+        if (!t.startsWith('data:')) continue;
+        const data = t.slice(5).trim();
+        if (data === '[DONE]') continue;
+        try {
+          const j = JSON.parse(data);
+          const d = j.choices && j.choices[0] && j.choices[0].delta;
+          const piece = d && (d.content || '');
+          if (piece) {
+            acc += piece; bubble.innerHTML = md(GWState.stripForDisplay(acc));
+            liveText = acc;                                   // 同步画到剧情页
+            const lb = $('#scLiveBody');
+            if (lb) lb.innerHTML = md(GWState.stripForDisplay(acc)) || '<span class="hint">正在拟稿……</span>';
+            const c = chatEl();
+            if (c.scrollHeight - c.scrollTop - c.clientHeight < 160) scrollDown();
+          }
+        } catch (e) { /* 半包 */ }
+      }
+    }
+    if (!acc.trim()) { bubble.innerHTML = '<span style="color:var(--red)">（模型没有返回内容）</span>'; msgs.pop(); }
+    else {
+      msgs.push({ role: 'assistant', content: acc }); saveMsgs();
+      // 合并结构化状态（失败也绝不影响剧情显示）
+      // 模型主动索取规则章节：{"need_rule":"关键词"} → 下一回合把相关章节原文附上
+      const _nr = /"need_rule"\s*:\s*"([^"]{1,40})"/.exec(acc);
+      if (_nr && cfg.needExtra !== false) {
+        pendingNeed = _nr[1];
+        toast('模型要求补充规则：' + _nr[1] + '（下一回合附上）');
+      }
+      const _prevPanels = (store.panels || []).length;
+      lastState = GWState.applyFromText(store, acc);
+      logOp('回合');
+      // 面板被清空 = 玩家会突然发现标签全没了 —— 当场告警，别让它静悄悄发生
+      if (_prevPanels > 0 && (store.panels || []).length === 0) {
+        logOp('⚠️面板清空');
+        toast('⚠️ 状态面板被清空了（可能 AI 发了 op:"reset"，或点了「重置结构化状态」）。可在「存档」里读回。', 8000);
+      }
+      store = lastState.store; saveStore(); refreshPanels();
+      if (!lastState.applied) toast('本回合状态未更新（模型没输出状态块）');
+      else if (lastState.errors.length) toast('状态有异常：' + String(lastState.errors[0]).slice(0, 40));
+      bubble.innerHTML = md(GWState.stripJson(acc));
+      liveText = null;
+      renderStory(); refreshTopTabs(); refreshPanels();
+    }
+  } catch (e) {
+    liveText = null;
+    if (e.name === 'AbortError') {
+      if (acc.trim()) { msgs.push({ role: 'assistant', content: acc }); saveMsgs(); bubble.innerHTML = md(acc) + '\n\n<span class="hint">（已停止）</span>'; }
+      else bubble.innerHTML = '<span class="hint">已停止</span>';
+      renderStory();
+    } else {
+      bubble.innerHTML = '<span style="color:var(--red)">' + esc(e.message) +
+        '</span><div class="hint" style="margin-top:8px">若一直失败：确认网络能访问 ' + esc(cfg.baseUrl) +
+        '；某些浏览器/网络会拦截跨站请求。</div>';
+      const wrap = $('#sceneWrap');
+      if (wrap) wrap.innerHTML = '<div class="scene-card"><div class="sc-head"><span class="sc-badge" style="background:rgba(224,106,106,.16);color:var(--red)">请求失败</span></div>' +
+        '<div class="sc-body" style="color:var(--red)">' + esc(e.message) +
+        '</div><div class="sc-body hint" style="color:var(--dim2);font-size:12.5px;margin-top:6px">若一直失败：确认网络能访问 ' + esc(cfg.baseUrl) + '；某些浏览器/网络会拦截跨站请求。</div></div>';
+      toast('请求失败');
+    }
+  } finally {
+    busy = false; $('#send').disabled = false; aborter = null;
+    scrollDown(); updateCtx();
+  }
+}
+
+/* ============================================================ 骰子房 */
+let diceTab = 'd20';
+function diceForm(t) {
+  if (t === 'd20') return '<div class="card"><h3>1d20 判定（+修正 ≥ 难度）</h3>' +
+    '<div class="row"><label>检定项</label><input id="k_name" value="判定"/></div>' +
+    '<div class="row"><label>修正</label><input id="k_mod" type="number" value="0"/></div>' +
+    '<div class="row"><label>难度</label><input id="k_dc" type="number" value="12"/></div></div>';
+  if (t === 'd100') return '<div class="card"><h3>1d100 判定（≤ 目标值 即成功）</h3>' +
+    '<div class="row"><label>事由</label><input id="k_name2" value="突破"/></div>' +
+    '<div class="row"><label>目标值%</label><input id="k_rate" type="number" value="60"/></div>' +
+    '<div class="row"><label>额外修正</label><input id="k_mod2" type="number" value="0"/></div>' +
+    '<div class="hint">填百分比。若规则书给了公式，自己算好填进来即可。</div></div>';
+  if (t === 'opp') return '<div class="card"><h3>对抗判定（双方各掷）</h3>' +
+    '<div class="row"><label>对面名称</label><input id="k_e" value="对手"/></div>' +
+    '<div class="row"><label>我方修正</label><input id="k_ma" type="number" value="0"/></div>' +
+    '<div class="row"><label>对方修正</label><input id="k_mb" type="number" value="0"/></div>' +
+    '<div class="row"><label>骰面</label><select id="k_face"><option value="20">d20</option><option value="100">d100</option></select></div></div>';
+  return '<div class="card"><h3>自由掷骰</h3>' +
+    '<div class="row"><label>骰式</label><input id="k_expr" value="1d20"/></div>' +
+    '<div class="hint">支持 <code>1d20</code>　<code>2d6+3</code>　<code>4d6kh3</code>（取高3）　<code>2d10-1</code></div></div>';
+}
+function renderDice() {
+  $('#diceBody').innerHTML = diceForm(diceTab);
+  $$('#diceTabs button').forEach((b) => b.classList.toggle('on', b.dataset.t === diceTab));
+}
+function doRoll() {
+  let out = '';
+  if (diceTab === 'd20') {
+    const name = $('#k_name').value || '判定';
+    const mod = Number($('#k_mod').value) || 0, dc = Number($('#k_dc').value) || 10;
+    const p = rollExpr('1d20'); const total = p.total + mod; const ok = total >= dc;
+    const g = p.rolls[0] === 20 ? '\n特殊：🟢 大成功（natural 20）' : p.rolls[0] === 1 ? '\n特殊：🔴 大失败（natural 1）' : '';
+    out = '🎲 判定：' + name + '（1d20' + (mod >= 0 ? '+' : '') + mod + ' vs 难度 ' + dc + '）\n骰源：1d20 = ' + p.rolls[0] +
+      '\n结果：' + (ok ? '🟢 成功' : '🔴 失败') + '（' + total + ' vs ' + dc + '）' + g;
+  } else if (diceTab === 'd100') {
+    const name = $('#k_name2').value || '判定';
+    const rate = (Number($('#k_rate').value) || 0) + (Number($('#k_mod2').value) || 0);
+    const p = rollExpr('1d100'); const ok = p.total <= rate;
+    out = '🎲 判定：' + name + '（1d100 ≤ ' + rate + '%）\n骰源：1d100 = ' + p.rolls[0] +
+      '\n结果：' + (ok ? '🟢 成功' : '🔴 失败') + '（' + p.rolls[0] + ' vs ' + rate + '）';
+  } else if (diceTab === 'opp') {
+    const e = $('#k_e').value || '对手';
+    const face = $('#k_face').value;
+    const ma = Number($('#k_ma').value) || 0, mb = Number($('#k_mb').value) || 0;
+    const pa = rollExpr('1d' + face), pb = rollExpr('1d' + face);
+    const ta = pa.total + ma, tb = pb.total + mb;
+    out = '🎲 对抗：我方 vs ' + e + '（d' + face + '）\n' +
+      '我方：1d' + face + ' = ' + pa.rolls[0] + ' (+' + ma + ') = ' + ta + '\n' +
+      '对方：1d' + face + ' = ' + pb.rolls[0] + ' (+' + mb + ') = ' + tb + '\n' +
+      '结果：' + (ta === tb ? '⚪ 平手（再掷一次）' : ta > tb ? '🟢 我方胜出' : '🔴 对方胜出');
+  } else {
+    const expr = $('#k_expr').value || '1d20';
+    const p = rollExpr(expr);
+    out = p ? ('🎲 自由掷骰：' + expr + '\n骰源：' + p.detail) : ('❌ 看不懂这个骰式：' + expr);
+  }
+  $('#diceBody').insertAdjacentHTML('beforeend', '<div class="out" id="diceOut">' + esc(out) + '</div>');
+  const all = $('#diceBody').querySelectorAll('.out');
+  if (all.length > 1) all[0].remove();
+}
+
+/* ============================================================ 归档 */
+const AK = ['a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'a7'];
+const AN = ['角色卡', '属性数值', '关系网', '因果/恩怨', '大事记', '成就与标签', '系统/特殊'];
+function loadArchToForm() { AK.forEach((k) => { $('#' + k).value = archive[k] || ''; }); }
+function saveArchFromForm() { AK.forEach((k) => { archive[k] = $('#' + k).value; }); saveArch(); toast('归档已保存'); }
+function injectArch() {
+  const lines = [];
+  AK.forEach((k, i) => { const v = ($('#' + k).value || '').trim(); if (v) lines.push('【' + AN[i] + '】\n' + v); });
+  if (!lines.length) { toast('归档是空的'); return; }
+  closeAll();
+  $('#input').value = '以下是我的当前档案，请据此确认状态，然后继续推进剧情：\n\n' + lines.join('\n\n');
+  $('#input').focus(); toast('已填入输入框，确认后发送');
+}
+
+/* ============================================================ 存档 */
+let slots = JSON.parse(localStorage.getItem(LS.slots) || '[]');
+const persistSlots = () => { try { localStorage.setItem(LS.slots, JSON.stringify(slots)); } catch (e) { toast('存档太多，浏览器存不下了'); } };
+function renderSlots() {
+  const el = $('#slotList');
+  if (!slots.length) { el.innerHTML = '<div class="hint">还没有存档。点下面「新建存档」把当前进度存下来。</div>'; return; }
+  el.innerHTML = slots.map((s, i) => {
+    const d = new Date(s.ts).toLocaleString('zh-CN');
+    return '<div class="slot"><div class="t"><div>' + esc(s.name) + '<div class="d">' + esc(s.worldName || '') +
+      ' ｜ ' + d + ' ｜ ' + (s.msgs ? s.msgs.length : 0) + ' 条</div></div>' +
+      '<div><button class="tiny" data-load="' + i + '">读取</button> <button class="tiny" data-del="' + i + '">删除</button></div></div></div>';
+  }).join('');
+}
+function saveNewSlot() {
+  if (!curWorld) { toast('先开一局'); return; }
+  const name = prompt('存档名：', curWorld.name + ' ' + new Date().toLocaleString('zh-CN'));
+  if (!name) return;
+  saveArchFromForm();
+  slots.unshift({ name, worldId: curWorld.id, worldName: curWorld.name, ts: Date.now(),
+                  msgs: msgs.slice(), archive: JSON.parse(JSON.stringify(archive)),
+                  store: JSON.parse(JSON.stringify(store)) });
+  persistSlots(); renderSlots(); toast('已存档');
+}
+async function loadSlot(i) {
+  const s = slots[i];
+  if (!s) return;
+  if (!curWorld || curWorld.id !== s.worldId) {
+    await openWorld2(s.worldId);
+    if (!curWorld || curWorld.id !== s.worldId) { toast('那个世界已被删除'); return; }
+  }
+  msgs = (s.msgs || []).slice();
+  archive = Object.assign({}, s.archive || {});
+  if (s.store) { store = s.store; saveStore(); }     // 结构化状态一并恢复
+  else resetStore();
+  lastState = { ok: true, errors: [], via: '' };
+  saveMsgs(); saveArch(); loadArchToForm(); renderAll(); updateCtx();
+  closeAll(); toast('已读取存档');
+}
+
+/* ============================================================ 设置 / 协议 */
+function loadCfgToForm() {
+  $('#cKey').value = cfg.apiKey; $('#cBase').value = cfg.baseUrl; $('#cModel').value = cfg.model;
+  $('#cTemp').value = cfg.temperature;
+  $('#uProto').checked = cfg.useProtocol !== false;
+  $('#uNotes').checked = cfg.useNotes !== false;
+  $('#cOpts').checked = cfg.optionButtons !== false;
+  $('#uNoThink').checked = cfg.noThink !== false;
+  $('#uBookLimit').value = (cfg.ruleMode === 'full') ? '0'
+    : (cfg.ruleMode === 'limit' ? String(Number(cfg.bookLimit) || 0) : 'auto');
+  updateCtx(); refreshQuota();
+}
+function saveCfgFromForm() {
+  const before = [cfg.useProtocol, cfg.useNotes, cfg.optionButtons, cfg.noThink, cfg.ruleMode, cfg.bookLimit].join();
+  cfg.apiKey = $('#cKey').value.trim();
+  cfg.baseUrl = $('#cBase').value.trim() || defaultCfg.baseUrl;
+  cfg.model = $('#cModel').value.trim() || defaultCfg.model;
+  cfg.temperature = Number($('#cTemp').value);
+  if (isNaN(cfg.temperature)) cfg.temperature = 1.0;
+  cfg.useProtocol = $('#uProto').checked;
+  cfg.useNotes = $('#uNotes').checked;
+  cfg.optionButtons = $('#cOpts').checked;
+  saveCfg();
+  if (curWorld) systemPrompt = composeSystem();
+  updateCtx();
+  if (before !== [cfg.useProtocol, cfg.useNotes, cfg.optionButtons].join()) renderAll();
+  toast('设置已保存');
+}
+
+/* ============================================================ 安装（PWA） */
+let deferredPrompt = null;
+let installEventSeen = false;   // 浏览器到底有没有发过这个事件
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  installEventSeen = true;
+  if (!localStorage.getItem('gwm_install_hide')) { $('#installBar').hidden = false; $('#navInstall').hidden = false; }
+});
+window.addEventListener('appinstalled', () => {
+  deferredPrompt = null; $('#installBar').hidden = true; $('#navInstall').hidden = true;
+  toast('已安装，可以从主屏幕直接进入了');
+});
+async function doInstall() {
+  if (!deferredPrompt) {
+    // 浏览器每次打开页面只发一次 beforeinstallprompt，点过一次就没了。
+    // 分两种情况给提示，别让人以为是坏了。
+    if (installEventSeen) {
+      toast('安装提示已用过一次了 —— 刷新页面后再点「安装」，或点浏览器菜单（⋮）选「安装应用」', 6000);
+    } else {
+      toast('这台浏览器不支持一键安装 —— 请点浏览器菜单（⋮）选「安装应用」或「添加到主屏幕」', 6000);
+    }
+    return;
+  }
+  deferredPrompt.prompt();
+  const r = await deferredPrompt.userChoice;
+  if (r && r.outcome === 'accepted') { $('#installBar').hidden = true; $('#navInstall').hidden = true; }
+  deferredPrompt = null;
+  // 用户取消了：给一次重新拿事件的机会（浏览器只在页面加载时发一次）
+  if (!(r && r.outcome === 'accepted')) {
+    setTimeout(() => { if (!deferredPrompt) location.reload(); }, 1500);
+  }
+}
+/* 把版本号写进界面（以及正在运行的 Service Worker 版本，排查缓存用） */
+(function showVersion() {
+  const put = (sw) => {
+    const txt = APP_VER + (sw ? '（缓存 ' + sw + '）' : '');
+    if ($('#verLine')) $('#verLine').textContent = '版本 ' + txt;
+    if ($('#verCfg')) $('#verCfg').textContent = APP_VER;
+  };
+  put(null);
+  if (!('serviceWorker' in navigator)) return;
+  navigator.serviceWorker.getRegistration().then((reg) => {
+    const w = reg && (reg.active || reg.waiting || reg.installing);
+    if (w && w.scriptURL) {
+      fetch(w.scriptURL).then((r) => r.text()).then((s) => {
+        const m = /VERSION\s*=\s*'([^']+)'/.exec(s);
+        if (m) { window.__swVer = m[1]; put(m[1]); }
+      }).catch(() => undefined);
+    }
+  }).catch(() => undefined);
+})();
+
+if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => undefined); });
+}
+if (window.matchMedia('(display-mode: standalone)').matches) {
+  document.addEventListener('DOMContentLoaded', () => { $('#installBar').hidden = true; $('#navInstall').hidden = true; });
+}
+
+/* ============================================================ 状态操作流水
+   排查「面板/数据为什么没了」用。存 localStorage，刷新也不丢（最多 30 条）。 */
+let opsLog = [];
+try { opsLog = JSON.parse(localStorage.getItem(LS.ops) || '[]') || []; } catch (e) { opsLog = []; }
+function logOp(tag) {
+  try {
+    opsLog.push({
+      t: new Date().toLocaleTimeString('zh-CN'),
+      tag: tag,
+      via: lastState.via || '-',
+      applied: lastState.applied === true,
+      panels: (store.panels || []).length,
+      colls: Object.keys((store.state && store.state.collections) || {}).length,
+      err: ((lastState.errors || [])[0] || '').slice(0, 46),
+    });
+    if (opsLog.length > 30) opsLog = opsLog.slice(-30);
+    localStorage.setItem(LS.ops, JSON.stringify(opsLog));
+  } catch (e) { /* 存不下就算了，不能因为它报错 */ }
+}
+
+/* ============================================================ 自检报告
+   出问题时一键生成诊断信息。只含版本 / 面板结构 / 错误记录，不含 API Key。 */
+function buildDiag() {
+  const L = [];
+  const p = (s) => L.push(s == null ? '' : String(s));
+  const short = (v, n) => { const s = String(v == null ? '' : v); return s.length > (n || 40) ? s.slice(0, n || 40) + '…' : s; };
+
+  p('══════ 文字游戏工坊 自检报告 ══════');
+  p('时间    : ' + new Date().toLocaleString('zh-CN'));
+  p('版本    : ' + APP_VER + '    缓存: ' + (window.__swVer || '(未取到)'));
+  p('来源    : ' + location.href);
+  p('世界    : ' + (curWorld ? (curWorld.name || curWorld.id) : '(未打开)'));
+  p('对话轮数: ' + msgs.filter((m) => m.role === 'user').length + '（记录 ' + msgs.length + ' 条）');
+
+  const panels = Array.isArray(store.panels) ? store.panels : [];
+  const colls = (store.state && store.state.collections) || {};
+  p('');
+  p('── 面板 ' + panels.length + ' 个 ──');
+  const seenName = {};
+  panels.forEach((pn, i) => {
+    const items = Array.isArray(colls[pn.id]) ? colls[pn.id] : [];
+    const nm = String(pn.name || pn.id);
+    const dupName = seenName[nm] ? '  ⚠️ 与第' + seenName[nm] + '个重名' : '';
+    seenName[nm] = seenName[nm] || (i + 1);
+    p('  ' + (i + 1) + '. id=' + JSON.stringify(pn.id) + '  name=' + JSON.stringify(nm) +
+      '  icon=' + JSON.stringify(pn.icon || '') + '  条目=' + items.length + dupName);
+  });
+  if (!panels.length) p('  （没有面板 —— AI 还没在 op:"init" 里声明 panels）');
+
+  const keys = Object.keys(colls);
+  p('');
+  p('── 集合键 ' + keys.length + ' 个 ──');
+  if (!keys.length) p('  （空）');
+  const norm = (v) => String(v == null ? '' : v).trim().toLowerCase();
+  keys.forEach((k) => {
+    const byId = panels.find((pn) => pn.id === k);
+    const byName = panels.find((pn) => norm(pn.name) === norm(k));
+    const items = Array.isArray(colls[k]) ? colls[k] : null;
+    let tag;
+    if (byId) tag = '✅ 对应面板「' + (byId.name || byId.id) + '」';
+    else if (byName) tag = '⚠️ 写成面板名了（已合并到「' + (byName.name || byName.id) + '」）';
+    else tag = '❌ 没有对应面板 → 会单独出一个标签';
+    p('  ' + (items ? items.length + ' 条' : '不是数组(' + typeof colls[k] + ')').padEnd(14) +
+      JSON.stringify(k) + '  ' + tag);
+  });
+
+  p('');
+  p('── 集合条目明细（各最多 12 条）──');
+  keys.forEach((k) => {
+    const items = Array.isArray(colls[k]) ? colls[k] : [];
+    if (!items.length) return;
+    const panel = panels.find((pn) => pn.id === k) || panels.find((pn) => norm(pn.name) === norm(k));
+    const pk = (panel && panel.primary) || 'name';
+    p('  ' + k + '（配对键=' + pk + '，' + items.length + ' 条）:');
+    items.slice(0, 12).forEach((it) => {
+      const nm = (it && typeof it === 'object') ? (it[pk] != null ? it[pk] : JSON.stringify(it).slice(0, 30)) : it;
+      p('     · ' + short(nm, 36));
+    });
+    if (items.length > 12) p('     …还有 ' + (items.length - 12) + ' 条');
+  });
+
+  p('');
+  p('── 最近一回合的状态解析 ──');
+  p('  ok=' + lastState.ok + '  applied=' + lastState.applied + '  via=' + (lastState.via || '-'));
+  const errs = lastState.errors || [], warns = lastState.warnings || [];
+  p('  errors (' + errs.length + '):');
+  errs.slice(0, 12).forEach((e) => p('     ❌ ' + e));
+  if (!errs.length) p('     （无）');
+  p('  warnings (' + warns.length + '):');
+  warns.slice(0, 12).forEach((w) => p('     ⚠️ ' + w));
+  if (!warns.length) p('     （无）');
+
+  p('');
+  p('── 最近一次 AI 回复里的 json 状态块 ──');
+  const lastAI = msgs.slice().reverse().find((m) => m.role === 'assistant');
+  if (!lastAI) p('  （还没有回复）');
+  else {
+    const raw = String(lastAI.content || '');
+    const m = raw.match(/```json\s*([\s\S]*?)```/) || raw.match(/(\{[\s\S]*"gw"[\s\S]*\})/);
+    if (m) p(short(m[1].trim(), 1600));
+    else p('  ⚠️ 这条回复里没有 json 状态块（末尾 300 字）:' + raw.slice(-300));
+  }
+
+  p('');
+  p('── 状态操作流水（最近 10 条，从旧到新）──');
+  if (!opsLog.length) p('  （还没有记录）');
+  opsLog.slice(-10).forEach((o) => {
+    p('  ' + o.t + '  ' + o.tag + '  via=' + o.via + '  applied=' + o.applied +
+      '  面板=' + o.panels + '  集合=' + o.colls + (o.err ? '  «' + o.err + '»' : ''));
+  });
+
+  p('');
+  p('── 主持协议 / 提示词 ──');
+  let savedProto = '';
+  try { savedProto = localStorage.getItem(LS.proto) || ''; } catch (e) { savedProto = ''; }
+  const isDefault = !savedProto || savedProto === (typeof DEFAULT_PROTOCOL === 'string' ? DEFAULT_PROTOCOL : '');
+  p('  协议来源  : ' + (savedProto ? '★ 你保存过的自定义版本' : '出厂默认'));
+  p('  协议长度  : ' + protocolText.length + ' 字符' +
+    (savedProto ? '（当前出厂默认是 ' + (DEFAULT_PROTOCOL || '').length + ' 字符）' : ''));
+  p('  含格式要求: ' + (/格式硬性要求/.test(protocolText) ? '是' : '否 ← 建议在设置里点「恢复默认」'));
+  p('  含状态块要求: ' + (/状态块/.test(protocolText) ? '是' : '否'));
+  p('  系统提示词: ' + systemPrompt.length + ' 字符');
+  if (savedProto && !isDefault) {
+    p('  ⚠️ 你保存过自定义协议，出厂默认的后续改进不会自动生效。');
+    p('     若想用最新版：⚙️ 设置 → 主持协议 → 恢复默认。');
+  }
+
+  p('');
+  p('── 存储 ──');
+  try {
+    let total = 0;
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      total += (k || '').length + String(localStorage.getItem(k) || '').length;
+    }
+    p('  localStorage 约 ' + Math.round(total / 1024) + ' KB，' + localStorage.length + ' 个键');
+  } catch (e) { p('  localStorage 读不到: ' + e.message); }
+  try {
+    p('  状态数据 ' + Math.round(JSON.stringify(store.state || {}).length / 1024) + ' KB');
+  } catch (e) { p('  状态数据序列化失败: ' + e.message); }
+
+  p('');
+  p('══════ 报告结束 ══════');
+  return L.join('\n');
+}
+
+function openDiag() {
+  const box = $('#diagBox');
+  if (box) box.textContent = buildDiag();
+  openDrawer('#dDiag');
+}
+
+/* ============================================================ 事件 */
+$('#worldGrid').addEventListener('click', (e) => {
+  const play = e.target.dataset.play, more = e.target.dataset.more;
+  if (play) openWorld2(play);
+  else if (more) openWorld(more);
+});
+$('#createFirst').onclick = () => openWorld(null);
+$('#navCreate').onclick = () => openWorld(null);
+$('#navPack').onclick = () => { fillPackSel(); openDrawer('#dPack'); };
+$('#navModel').onclick = () => { loadCfgToForm(); openDrawer('#dCfg'); };
+$('#navProto').onclick = () => {
+  $('#protoText').value = protocolText;
+  // 告诉用户当前用的是不是出厂默认 —— 存过自定义版的人收不到后续改进
+  const h = $('#protoHint');
+  if (h) {
+    let saved = '';
+    try { saved = localStorage.getItem(LS.proto) || ''; } catch (e) { saved = ''; }
+    if (!saved) h.innerHTML = '当前状态：<b style="color:var(--gold)">出厂默认</b>（推荐）';
+    else h.innerHTML = '当前状态：<b style="color:#e8a33d">你保存过的自定义版本</b>（' + protocolText.length +
+      ' 字符；出厂默认 ' + DEFAULT_PROTOCOL.length + ' 字符）<br/>想用最新版请点下面的「恢复默认」。';
+  }
+  openDrawer('#dProto');
+};
+
+$('#cdrop').onclick = () => $('#cfile').click();
+$('#cfile').onchange = (e) => { pickRule(e.target.files[0]); e.target.value = ''; };
+['dragenter', 'dragover'].forEach((ev) => $('#cdrop').addEventListener(ev, (e) => { e.preventDefault(); $('#cdrop').classList.add('on'); }));
+['dragleave', 'drop'].forEach((ev) => $('#cdrop').addEventListener(ev, (e) => { e.preventDefault(); $('#cdrop').classList.remove('on'); }));
+$('#cdrop').addEventListener('drop', (e) => { if (e.dataTransfer && e.dataTransfer.files[0]) pickRule(e.dataTransfer.files[0]); });
+$('#coverPrev').onclick = () => $('#coverFile').click();
+$('#coverFile').onchange = (e) => {
+  const f = e.target.files[0]; if (!f) return;
+  wCoverFile = f;
+  $('#coverPrev').style.backgroundImage = 'url(' + URL.createObjectURL(f) + ')';
+  $('#coverPrev').innerHTML = '';
+  e.target.value = '';
+};
+$('#wSave').onclick = saveWorld;
+$('#wCancel').onclick = closeAll;
+$('#wPreview').onclick = async () => {
+  const w = await dbGet(wId);
+  if (w) alert('《' + w.name + '》\n' + w.chars.toLocaleString() + ' 字符\n\n—— 开头 800 字 ——\n\n' + w.text.slice(0, 800));
+};
+$('#wExport').onclick = () => exportWorld(wId);
+$('#wDelete').onclick = async () => {
+  if (!confirm('删除这个世界？（已存的游戏进度不受影响）')) return;
+  await dbDel(wId); await loadWorlds(); closeAll(); toast('已删除');
+};
+
+$('#packExport').onclick = () => exportWorld(null);
+$('#packImport').onclick = importPack;
+$('#backupExport').onclick = backupExport;
+$('#backupImport').onclick = backupImport;
+
+$('#installBtn').onclick = doInstall;
+$('#navInstall').onclick = doInstall;
+$('#openDiag').onclick = () => { closeAll(); openDiag(); };
+$('#diagBuild').onclick = () => { $('#diagBox').textContent = buildDiag(); toast('已重新生成'); };
+$('#diagCopy').onclick = async () => {
+  const txt = ($('#diagBox').textContent || buildDiag());
+  try {
+    await navigator.clipboard.writeText(txt);
+    toast('已复制，粘贴发给我就行', 4000);
+  } catch (e) {
+    try {
+      const r = document.createRange(); r.selectNodeContents($('#diagBox'));
+      const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+      toast('已选中，长按复制即可', 4000);
+    } catch (e2) { toast('复制失败，请长按选中文字', 4000); }
+  }
+};
+$('#installClose').onclick = () => { localStorage.setItem('gwm_install_hide', '1'); $('#installBar').hidden = true; };
+
+$('#bBack').onclick = () => { saveArchFromForm(); showLib(); };
+$('#bPanels').onclick = () => { renderPanelDrawer(); openDrawer('#dPanels'); };
+$('#pvTabs').onclick = (e) => {
+  const b = e.target.closest('[data-pvtab]');
+  if (!b) return;
+  pvActive = b.getAttribute('data-pvtab');
+  renderPanelDrawer();
+};
+$('#pvReset').onclick = () => {
+  if (!confirm('重置结构化状态？下一回合 AI 会重新输出面板清单（对话历史不动）。')) return;
+  resetStore(); renderPanelDrawer(); updateCtx(); toast('状态已重置');
+};
+$('#topTabs').onclick = (e) => {
+  const b = e.target.closest('[data-tab]');
+  if (b) switchTab(b.getAttribute('data-tab'));
+};
+$('#pageData').onclick = (e) => {
+  const b = e.target.closest('[data-pvtab]');
+  if (b) switchTab('pv:' + b.getAttribute('data-pvtab'));
+};
+$('#bDice').onclick = () => { openDrawer('#dDice'); renderDice(); };
+$('#bArch').onclick = () => { loadArchToForm(); openDrawer('#dArch'); };
+$('#bSave').onclick = () => { renderSlots(); openDrawer('#dSave'); };
+$('#bNotes').onclick = () => { if (curWorld) { $('#notes').value = curWorld.notes || ''; openDrawer('#dNotes'); } };
+$('#bCfg').onclick = () => { loadCfgToForm(); openDrawer('#dCfg'); };
+
+$$('.drawer').forEach((d) => d.addEventListener('click', (e) => { if (e.target === d) d.classList.remove('on'); }));
+$$('[data-close]').forEach((b) => b.addEventListener('click', closeAll));
+
+$$('#diceTabs button').forEach((b) => b.addEventListener('click', () => { diceTab = b.dataset.t; renderDice(); }));
+$('#diceRoll').onclick = doRoll;
+$('#diceCopy').onclick = () => {
+  const el = $('#diceOut');
+  if (!el) { toast('先掷一次'); return; }
+  const txt = el.textContent;
+  navigator.clipboard?.writeText(txt).then(() => toast('已复制，粘进对话即可')).catch(() => {
+    const ta = document.createElement('textarea'); ta.value = txt; document.body.appendChild(ta);
+    ta.select(); document.execCommand('copy'); ta.remove(); toast('已复制');
+  });
+};
+
+// 空面板里的「🤖 让 AI 补上」按钮：点一下就把补数据的要求发给 AI
+document.addEventListener('click', (e) => {
+  const b = e.target && e.target.closest ? e.target.closest('.pv-fill') : null;
+  if (!b) return;
+  e.preventDefault(); e.stopPropagation();
+  const nm = b.getAttribute('data-fill-name') || '这个面板';
+  const id = b.getAttribute('data-fill-id') || '';
+  send('请把「' + nm + '」的内容补上，写进状态块里的 collections.' + id +
+    '（必须是数组，每条一个对象；没有的内容就不要编）。');
+});
+$('#send').onclick = () => send($('#input').value);
+$('#input').addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send($('#input').value); } });
+$('#input').addEventListener('input', (e) => { e.target.style.height = 'auto'; e.target.style.height = Math.min(150, e.target.scrollHeight) + 'px'; });
+$$('#quick button').forEach((b) => b.addEventListener('click', () => {
+  if (!cfg.apiKey) { toast('请先在 ⚙️ 里填 API Key'); openDrawer('#dCfg'); return; }
+  send(b.dataset.q);
+}));
+
+$('#archSave').onclick = () => { saveArchFromForm(); closeAll(); };
+$('#archInject').onclick = injectArch;
+$('#notesSave').onclick = async () => {
+  if (!curWorld) return;
+  curWorld.notes = $('#notes').value;
+  await dbPut(curWorld);
+  systemPrompt = composeSystem();
+  toast('补充设定已保存'); closeAll();
+};
+$('#protoSave').onclick = () => {
+  const t = $('#protoText').value;
+  protocolText = t;
+  try { localStorage.setItem(LS.proto, t); } catch (e) { toast('保存失败：存储空间不足'); return; }
+  if (curWorld) systemPrompt = composeSystem();
+  toast('主持协议已保存'); closeAll();
+};
+$('#protoReset').onclick = () => {
+  if (!confirm('恢复为自带的默认协议？你当前的修改会丢失。')) return;
+  localStorage.removeItem(LS.proto);
+  protocolText = DEFAULT_PROTOCOL;
+  $('#protoText').value = protocolText;
+  if (curWorld) systemPrompt = composeSystem();
+  toast('已恢复默认');
+};
+$('#saveNew').onclick = saveNewSlot;
+$('#saveExport').onclick = () => {
+  const size = download('文字游戏工坊_存档_' + new Date().toISOString().slice(0, 10) + '.json',
+    { slots, archive, msgs, cfg: Object.assign({}, cfg, { apiKey: '' }) });
+  toast('已导出（' + Math.round(size / 1024) + ' KB，不含 API Key）');
+};
+$('#saveImport').onclick = () => pickFile('.json', async (file) => {
+  try {
+    const j = JSON.parse(await file.text());
+    if (j.slots) { slots = j.slots; persistSlots(); renderSlots(); }
+    if (j.msgs) { msgs = j.msgs; saveMsgs(); renderAll(); }
+    toast('导入成功');
+  } catch (e) { toast('文件格式不对'); }
+});
+$('#slotList').addEventListener('click', (e) => {
+  const l = e.target.dataset.load, d = e.target.dataset.del;
+  if (l !== undefined) loadSlot(Number(l));
+  if (d !== undefined && confirm('删除这个存档？')) { slots.splice(Number(d), 1); persistSlots(); renderSlots(); }
+});
+$('#cfgSave').onclick = () => { saveCfgFromForm(); closeAll(); };
+$('#ctxCompress').onclick = () => {
+  if (!msgs.length) { toast('还没有对话'); return; }
+  msgs = msgs.slice(-2); saveMsgs(); renderAll(); updateCtx();
+  toast('已保留最后 2 条，建议接着让它输出归档'); closeAll();
+};
+$('#ctxClear').onclick = () => {
+  if (!confirm('清空本局对话？\n（结构化状态与对话一起重置，相当于重新开局；归档与存档不受影响）')) return;
+  msgs = []; resetStore(); saveMsgs(); renderAll(); updateCtx(); closeAll();
+  toast('本局已清空，状态已重置');
+};
+$('#stateReset').onclick = () => {
+  if (!confirm('重置结构化状态？下一回合 AI 会重新输出面板清单（对话历史不动）。')) return;
+  resetStore(); updateCtx(); closeAll();
+  toast('状态已重置');
+};
+['uProto', 'uNotes', 'cOpts', 'uNoThink', 'uBookLimit'].forEach((id) => $('#' + id).addEventListener('change', () => {
+  cfg.useProtocol = $('#uProto').checked; cfg.useNotes = $('#uNotes').checked;
+  cfg.optionButtons = $('#cOpts').checked;
+  cfg.noThink = $('#uNoThink').checked;
+  const rv = $('#uBookLimit').value;
+  if (rv === 'auto') { cfg.ruleMode = 'auto'; }
+  else if (rv === '0') { cfg.ruleMode = 'full'; }
+  else { cfg.ruleMode = 'limit'; cfg.bookLimit = Number(rv) || 0; }
+  if (cfg.ruleMode === 'auto' && !ruleIndex && typeof GWRetrieve !== 'undefined' && curWorld) {
+    try { ruleIndex = GWRetrieve.build(curWorld.text || ''); } catch (e) { ruleIndex = null; }
+  }
+  if (curWorld) systemPrompt = composeSystem();
+  updateCtx(); saveCfg();
+}));
+
+/* ============================================================ 启动 */
+(async function boot() {
+  cfg = Object.assign({}, defaultCfg, cfg);
+  const saved = localStorage.getItem(LS.proto);
+  protocolText = saved || DEFAULT_PROTOCOL;
+  $('#protoText').value = protocolText;
+  loadCfgToForm();
+  await loadWorlds();
+  if (!window.extractDocxBuffer) {
+    $('#upLog').innerHTML = '<span style="color:var(--red)">⚠️ docx-browser.js 没加载成功，.docx 导入会不可用；.txt/.md 仍可导入。</span>';
+  }
+})();
+</script>
+</body>
+</html>
