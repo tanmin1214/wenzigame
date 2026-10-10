@@ -5,7 +5,7 @@
 */
 'use strict';
 
-const VERSION = 'gwm-v30';
+const VERSION = 'gwm-v33';
 const SHELL = [
   './',
   './index.html',

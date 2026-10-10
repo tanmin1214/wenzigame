@@ -86,6 +86,37 @@
    * 应原样按文本存下来（保住「下品」这类信息），而不是抽成 3 把说明丢掉。
    * （抽数字是 toNumber 的事，只在需要做加减时用。）
    */
+  // AI 常把数值写成带单位的文本（「8岁」「3年」「一」）——
+  // 原本 validNumericInput 要求纯数字，于是整次更新被丢掉（玩家实测：年龄永远 0）。
+  // 这里先尽量把数字抽出来；真抽不出来（「很多」）才跳过。
+  const CN_NUM = { 零: 0, 一: 1, 二: 2, 两: 2, 三: 3, 四: 4, 五: 5, 六: 6, 七: 7, 八: 8, 九: 9, 十: 10 };
+  function coerceNum(v) {
+    if (typeof v === 'number' && isFinite(v)) return v;
+    if (typeof v !== 'string') return null;
+    const s = v.trim();
+    if (!s) return null;
+    const m = s.match(/^(-?\d+(?:\.\d+)?)/);            // 「8岁」→ 8、「8」→ 8
+    if (m) return Number(m[1]);
+    const c = s.match(/^([零一二两三四五六七八九十]+)/);     // 「八年」→ 8、「十二」→ 12
+    if (c) {
+      const t = c[1];
+      if (CN_NUM[t] !== undefined) return CN_NUM[t];
+      const i10 = t.indexOf('十');
+      if (i10 === 0) return 10 + (CN_NUM[t[1]] || 0);
+      if (i10 > 0) return (CN_NUM[t[0]] || 1) * 10 + (CN_NUM[t[1]] || 0);
+    }
+    return null;
+  }
+  function coerceNumericValue(v) {
+    const one = coerceNum(v);
+    if (one !== null) return one;
+    if (Array.isArray(v)) {
+      const out = v.map(coerceNum);
+      return out.every((x) => x !== null) ? out : null;
+    }
+    return null;
+  }
+
   function validNumericInput(v) {
     if (Array.isArray(v)) return v.some((x) => validNumericInput(x));
     if (isNum(v)) return true;
@@ -233,17 +264,32 @@
         if (!v || typeof v !== 'object') { errors.push('state.player 不是对象，已忽略'); continue; }
         if (!target.player || typeof target.player !== 'object') target.player = {};
         for (const pk of Object.keys(v)) {
-          const pv = v[pk];
+          let pv = v[pk];
           if (pv === undefined || pv === null) continue;
           if (pk === 'stats' || pk === 'flags') {
-            if (!pv || typeof pv !== 'object') { errors.push('state.player.' + pk + ' 不是对象，已忽略'); continue; }
+            if (!pv || typeof pv !== 'object') {
+              // AI 常把 flags 写成一句话（「穿越者·系统模式」）—— 包成对象收下，别丢整块
+              if (pk === 'flags' && (typeof pv === 'string' || typeof pv === 'number')) {
+                pv = { 状态: String(pv) };
+                warnings.push('state.player.flags 写成了文本，已按「状态」收下');
+              } else {
+                errors.push('state.player.' + pk + ' 不是对象，已忽略');
+                continue;
+              }
+            }
             if (!target.player[pk] || typeof target.player[pk] !== 'object') target.player[pk] = {};
             for (const fk of Object.keys(pv)) {
               const oldV = target.player[pk][fk];
               // 原本是数值（或数值对）的字段，来了非数值 → 跳过并记录，避免把血量写成“很多”
               if ((isNum(oldV) || Array.isArray(oldV)) && !validNumericInput(pv[fk])) {
-                errors.push('state.player.' + pk + '.' + fk + ' 原为数值但新值不是数值，已跳过');
-                continue;
+                // 先试着抽出数字（「8岁」→8、「八年」→8）；抽得出就照常合并
+                const cv = coerceNumericValue(pv[fk]);
+                if (cv !== null) {
+                  pv[fk] = cv;
+                } else {
+                  errors.push('state.player.' + pk + '.' + fk + ' 原为数值但新值不是数值，已跳过');
+                  continue;
+                }
               }
               // stats 天然是数值（含 [当前,上限] 对），按数值合并；flags 走通用规则（可能放标签数组）
               target.player[pk][fk] = mergeField(pk === 'stats' ? 'number' : undefined, oldV, pv[fk]);
