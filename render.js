@@ -80,6 +80,25 @@ function esc(s) {
     party: '队伍', role: '身份', timeline: '时间线', difficulty: '难度',
     progress: '进度', stage: '阶段', chapter: '章节', turn: '回合', day: '天数',
     age: '年龄', gender: '性别', race: '种族', class: '职业', title: '称号',
+    // 面板条目里高频出现、但以前没登记的键（玩家实测：qty / desc 直接显示了英文）
+    qty: '数量', quantity: '数量', count: '数量', num: '数量', amount: '数量', total: '总计',
+    desc: '说明', description: '说明', detail: '详情', details: '详情', info: '信息',
+    note: '备注', notes: '备注', remark: '备注', comment: '评价', summary: '摘要',
+    effect: '效果', effects: '效果', func: '功能', function: '功能', ability: '能力',
+    cost: '消耗', price: '价格', fee: '费用', req: '要求', require: '要求', requirement: '要求',
+    condition: '条件', unlock: '解锁', unlocked: '已解锁', locked: '未解锁',
+    status: '状态', state: '状态', phase: '阶段', mode: '模式', form: '形态',
+    type: '类型', kind: '类型', category: '类别', tag: '标签', tags: '标签',
+    grade: '品阶', quality: '品质', tier: '阶位', star: '星级', rarity: '稀有度',
+    owner: '持有者', source: '来源', target: '目标', from: '来自',
+    time: '时间', date: '日期', place: '地点', location: '地点', where: '位置',
+    rel: '关系', relation: '关系', affinity: '好感', favor: '好感',
+    faction: '势力', sect: '门派', org: '组织', guild: '公会',
+    objective: '目标', reward: '奖励', rewards: '奖励', goal: '目标',
+    slot: '部位', equip: '装备', weapon: '武器', armor: '护甲',
+    usage: '用途', uses: '可用次数', remaining: '剩余', limit: '上限',
+    hidden: '隐藏', visible: '可见', active: '是否启用', enabled: '是否启用',
+    player: '玩家', gm: '主持', world: '世界', scene: '场景', event: '事件',
   };
 
   /** 英文键尽量译成中文；已是中文或字典里没有就原样返回 */
@@ -422,6 +441,29 @@ function esc(s) {
       return rows;
     }
 
+    // 面板没有中文名时，尽量从 id 猜一个中文名 —— 玩家看到的标签不该是 system
+    const PANEL_ZH = {
+      system: '系统', sys: '系统', cheats: '金手指', cheat: '金手指', goldenfinger: '金手指',
+      bag: '背包', inventory: '背包', items: '道具', item: '道具', gear: '装备', equipment: '装备',
+      char: '角色', character: '角色', player: '角色', stats: '属性', attrs: '属性', attributes: '属性',
+      skills: '技能', skill: '技能', abilities: '能力', spells: '法术', martial: '武学', arts: '功法',
+      npc: '人物', npcs: '人物', people: '人物', relations: '关系', relation: '关系', contacts: '人脉',
+      quest: '任务', quests: '任务', task: '任务', tasks: '任务', missions: '任务', objective: '目标',
+      faction: '势力', factions: '势力', sect: '门派', org: '组织', guild: '公会', clan: '家族',
+      pets: '宠物', pet: '宠物', mounts: '坐骑', beasts: '异兽',
+      journal: '大事记', log: '记录', history: '履历',
+      titles: '称号', achievements: '成就', buffs: '状态', debuffs: '负面',
+      resources: '资源', money: '金钱', currency: '货币', wallet: '钱包',
+    };
+    function panelName(p) {
+      const raw = String((p && p.name) || '').trim();
+      if (raw && /[\u4e00-\u9fa5]/.test(raw)) return raw;    // 已经有中文名，用它
+      const id = String((p && p.id) || '').trim().toLowerCase();
+      if (PANEL_ZH[id]) return PANEL_ZH[id];                  // 按 id 猜
+      if (PANEL_ZH[raw.toLowerCase()]) return PANEL_ZH[raw.toLowerCase()];
+      return raw || id || '面板';
+    }
+
     // 哪些集合键已经被某个面板吃掉了（别名 id / 拿面板名当键）
     const consumed = {};
     const extrasOf = (p) => {
@@ -478,7 +520,7 @@ function esc(s) {
       }
       tabs.push({
         id: p.id,
-        name: p.name || p.id,
+        name: panelName(p),
         icon: p.icon || '',
         count: items.length || autoCount,
         empty: empty,

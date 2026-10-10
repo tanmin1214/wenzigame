@@ -580,7 +580,7 @@ const $ = (s) => document.querySelector(s);
    版本号 —— 想改就改这一行（书库首页底部和设置面板会一起变）。
    看到手机上显示的版本号，就知道它加载的是哪一版。
    ══════════════════════════════════════════════════════════════ */
-const APP_VER = 'v2.23';
+const APP_VER = 'v2.28';
 const $$ = (s) => Array.from(document.querySelectorAll(s));
 
 function toast(msg, ms) {
@@ -1736,6 +1736,8 @@ function composeSystem() {
     '      "fields":[{"key":"name","label":"姓名","type":"text"},{"key":"rel","label":"关系","type":"text"}]}',
     '   ],"state":{}}',
     '   面板 4–8 个：角色／背包／人物关系／任务／技能／功法／势力…（id 用英文，name 用中文）',
+    '**有「系统／金手指／面板」类设定的规则书，面板清单里必须包含一张 system 面板**（icon 用 🖥️），',
+    '   把系统提示、金手指能力、任务发布写进 state.collections.system —— 玩家才有一个专门的地方随时查看。',
     '   · **每张声明的面板都必须在 state.collections.<面板id> 里写数据**，否则那张面板永远空着。',
     '   · **「角色／属性／资源」不用声明成面板** —— 总览页会自动显示（player／stats／resources），再声明一张只会空着。',
     '',
@@ -1746,6 +1748,11 @@ function composeSystem() {
     '**8. 禁止输出 LaTeX**（「\\textcolor{}{}」「\\colorbox{}{}」「\\textbf{}」「\\qquad」「\\(...\\)」这类都不行）',
     '   —— 网页渲染不了，玩家会直接看到一堆源码。面板和正文一律用 **Unicode 纯文本**：',
     '   颜色用 emoji，分隔用「｜」，横线用「─────」，强调用「**加粗**」。',
+    '**9. 面板名和字段名一律用中文**：`name` 写「系统」「金手指」「背包」这种中文（不要拿 id 当名字）；',
+    '   `fields[].label` 也必须是中文（「数量」「说明」），只有 `id`／`key` 用英文。',
+    '   每条数据里的键要和该面板 fields 的 key 对得上 —— 别用没声明过的键，否则玩家会看到英文字段名。',
+    '**10. 「系统／金手指／主角／唯一血脉」这类只有一个的东西，collections 里只放一条** ——',
+    '   状态、解锁进度、当前效果都写成这条的字段；别拆成「系统状态」「系统·觉醒者」两条。',
   ].join('\n'));
   return parts.join('\n\n');
 }

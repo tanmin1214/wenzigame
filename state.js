@@ -543,14 +543,18 @@
     if (mode === 'init' && patch.panels) {
       next.panels = sanitizePanels(patch.panels, errors);
     } else if (patch.panels) {
-      // 面板结构一般不允许中途变更（防止覆盖玩家已有的面板）。
-      // 但如果本局现在一个面板都没有（例如开局 init 忘了给 panels），就允许补建 ——
-      // 否则那一局永远不可能有面板，只能重开。
-      if (!next.panels.length) {
-        next.panels = sanitizePanels(patch.panels, errors);
-        if (next.panels.length) warnings.push('本局此前没有面板，已按本回合的 panels 补建');
-      } else if (!downgradedInit) {
-        errors.push('非 init 补丁里的 panels 已忽略（面板结构不允许中途变更）');
+      // 面板结构不允许【改写】（防止覆盖玩家已有面板），但允许【追加】。
+      // 这样 AI 事后想补一张「系统／金手指」面板随时可以；
+      // 开局 init 忘了给 panels 的那一局也能靠这个救回来。
+      const want = sanitizePanels(patch.panels, errors);
+      const haveIds = {};
+      next.panels.forEach((p) => { haveIds[p.id] = 1; });
+      const added = want.filter((p) => !haveIds[p.id]);
+      if (added.length) {
+        next.panels = next.panels.concat(added);
+        warnings.push('已追加 ' + added.length + ' 张新面板：' + added.map((p) => p.name || p.id).join('／'));
+      } else if (!next.panels.length) {
+        warnings.push('本回合的 panels 没能建起来（格式可能不对）');
       }
     }
 
